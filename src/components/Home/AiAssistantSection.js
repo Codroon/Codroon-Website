@@ -6,7 +6,7 @@ import MarginWrapper from "../wrappers/sectionWrapper";
 const AIAssistantSection = () => {
   return (
     <MarginWrapper top={0} bottom={80} leftRight={30}>
-      <section className="relative flex flex-col items-center justify-center w-full max-w-[1920px] mx-auto px-4 bg-[#0F172A] overflow-hidden py-12 md:py-16">
+      <section className="relative flex flex-col border-b border-[#262626] items-center justify-center w-full max-w-[1920px] mx-auto px-4 bg-[#0F172A] overflow-hidden py-12 md:py-16">
         {/* Gradient Banner */}
         <div className="flex items-center justify-center w-[90%] max-w-[902px] h-[83px] rounded-[100px] border border-[#52B069] px-[34px] py-[20px] bg-gradient-to-r from-[#4490C9] to-[#63DAAC]">
           <h2 className="text-white text-[20px] md:text-[24px] font-barlow font-semibold tracking-[0.5px] text-center">
@@ -31,7 +31,7 @@ const AIAssistantSection = () => {
         </div>
 
         {/* Buttons Row */}
-       <div className="flex items-center justify-center gap-[16px] mt-[30px] w-full max-w-[1061px] flex-nowrap overflow-x-auto scrollbar-hide">
+       <div className="flex items-center justify-center gap-[16px] mt-[30px] w-full max-w-[90vw] lg:max-w-[1061px] flex-wrap overflow-x-hidden">
   {[
     "Article",
     "Weather",
@@ -45,9 +45,9 @@ const AIAssistantSection = () => {
       key={item}
       className={`${
         item !== "Suggest Something"
-          ? "w-[126px]"
-          : "w-[295px]"
-      } h-[40px] rounded-[30px] bg-[#00000040] border border-[#52B069] text-[#52B069] text-[16px] font-barlow  hover:bg-[#52B069] hover:text-[#050F1A] transition-colors duration-300`}
+          ? "w-[126px] min-w-[100px]"
+          : "w-[295px] min-w-[200px]"
+      } h-[40px] rounded-[30px] bg-[#00000040] border border-[#52B069] text-[#52B069] text-[16px] font-barlow  hover:bg-[#52B069] hover:text-[#050F1A] transition-colors duration-300 flex-shrink-0`}
     >
       {item}
     </button>
