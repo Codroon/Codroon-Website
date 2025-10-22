@@ -36,16 +36,16 @@ export default function WhyChooseSection() {
         </div>
         {/* Text placed over the pre-rendered green balls in image */}
         <div className="absolute inset-0 z-10">
-            <span className="absolute top-[4%] left-[27%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
+            <span className="absolute top-[4%] left-[26%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
               {features[0]}
             </span>
-            <span className="absolute top-[4%] left-[40.5%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
+            <span className="absolute top-[4%] left-[40%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
               {features[1]}
             </span>
             <span className="absolute top-[4%] left-[54%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
               {features[2]}
             </span>
-            <span className="absolute top-[4%] left-[67%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
+            <span className="absolute top-[4%] left-[68%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
               {features[3]}
             </span>
           </div>
