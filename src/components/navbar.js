@@ -35,29 +35,46 @@ const Navbar = () => {
             onMouseEnter={() => setIsResourcesOpen(true)}
             onMouseLeave={() => setIsResourcesOpen(false)}
           >
-            <a
-              href={item.href}
+            <button
+              onClick={() => setIsResourcesOpen(!isResourcesOpen)}
               className="
                 text-white hover:text-green-400 
                 font-heading font-medium 
                 text-[18px] leading-[150%] 
                 transition-colors duration-200
                 cursor-pointer
+                flex items-center gap-2
+                bg-transparent border-none
               "
             >
               {item.name}
-            </a>
+              <svg 
+                width="12" 
+                height="12" 
+                viewBox="0 0 12 12" 
+                fill="none" 
+                className={`transition-transform duration-200 ${isResourcesOpen ? 'rotate-180' : ''}`}
+              >
+                <path 
+                  d="M3 4.5L6 7.5L9 4.5" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
             {isResourcesOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+              <div className="absolute top-full left-0 mt-2 w-48 bg-[#0F172A] border border-gray-600 rounded-lg shadow-lg py-2 z-50">
                 <a
                   href="/contact-us"
-                  className="block px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+                  className="block px-4 py-2 text-white hover:bg-gray-700 transition-colors duration-200"
                 >
                   Contact Us
                 </a>
                 <a
                   href="/who-we-are"
-                  className="block px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+                  className="block px-4 py-2 text-white hover:bg-gray-700 transition-colors duration-200"
                 >
                   About Us
                 </a>
