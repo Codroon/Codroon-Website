@@ -3,7 +3,7 @@ import Image from "next/image";
 import MarginWrapper from "@/components/wrappers/sectionWrapper";
 import { useState } from "react";
 import BudgetSlider from "../common/slider";
-export default function ContactSection() {
+export default function ContactSection({noThankYou}) {
   const [selectedServices, setSelectedServices] = useState(["Web Design"]);
   const [budget, setBudget] = useState(3000);
   
@@ -25,7 +25,7 @@ export default function ContactSection() {
     <MarginWrapper top={96} bottom={96}>
       <div className="w-full max-w-[1908px] mx-auto">
         {/* Header Section with Hand Background */}
-        <div className="relative w-full h-[592.35px] px-4 sm:px-8 md:px-16 lg:px-24 xl:px-[350px] py-[120px] flex flex-col gap-[50px] items-center justify-center">
+        {!noThankYou &&   <div className="relative w-full h-[592.35px] px-4 sm:px-8 md:px-16 lg:px-24 xl:px-[350px] py-[120px] flex flex-col gap-[50px] items-center justify-center">
           {/* Background Image */}
           <div className="absolute inset-0">
             <Image
@@ -68,14 +68,14 @@ export default function ContactSection() {
             </div>
           </div>
         </div>
-
+}
         {/* Form Section */}
         <div className="w-full max-w-[900px] mx-auto px-4 sm:px-8 py-16">
           <form className="space-y-8">
             {/* Name and Email Fields */}
-            <div className="flex flex-col md:flex-row gap-[40px]">
-              <div className="flex-1">
-                <label className="block text-white font-barlow font-medium text-lg mb-2">
+            <div className="flex flex-col md:flex-row gap-[40px] ">
+              <div className="flex-1 bg-[#14243B] p-[24px] rounded-[8px]">
+                <label className="block text-white font-barlow font-medium text-lg mb-2 ">
                   Full Name
                 </label>
                 <input
@@ -84,7 +84,7 @@ export default function ContactSection() {
                   className="w-full bg-transparent border-b border-[#06D6A0] text-white placeholder-[#06D6A0] py-2 focus:outline-none focus:border-[#05C191]"
                 />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 bg-[#14243B] p-[24px] rounded-[8px]">
                 <label className="block text-white font-barlow font-medium text-lg mb-2">
                   Email
                 </label>
@@ -97,7 +97,7 @@ export default function ContactSection() {
             </div>
 
             {/* Why are you contacting us */}
-            <div className="space-y-6">
+            <div className="space-y-6 bg-[#14243B] p-[24px] rounded-[8px]">
               <h3 className="max-w-[820px] font-barlow font-medium text-[22px] leading-[150%] tracking-[0%] text-white">
                 Why are you contacting us?
               </h3>
@@ -107,11 +107,11 @@ export default function ContactSection() {
                   {serviceOptions.slice(0, 2).map((service) => (
                     <label key={service} className="flex items-center gap-3 cursor-pointer" onClick={() => handleServiceToggle(service)}>
                       <div className={`w-[28px] h-[28px] rounded-[4px] border border-[#06D6A0] p-[4px] flex items-center justify-center transition-colors ${
-                        selectedServices.includes(service) ? 'bg-[#06D6A0]' : 'bg-[#262626]'
+                        selectedServices.includes(service) ? 'bg-[#0F172A]' : 'bg-[#0F172A]'
                       }`}>
                         {selectedServices.includes(service) && (
                           <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
-                            <path d="M13.5 4.5L6 12L2.5 8.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M13.5 4.5L6 12L2.5 8.5" stroke="#06D6A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         )}
                       </div>
@@ -125,11 +125,11 @@ export default function ContactSection() {
                   {serviceOptions.slice(2, 4).map((service) => (
                     <label key={service} className="flex items-center gap-3 cursor-pointer" onClick={() => handleServiceToggle(service)}>
                       <div className={`w-[28px] h-[28px] rounded-[4px] border border-[#06D6A0] p-[4px] flex items-center justify-center transition-colors ${
-                        selectedServices.includes(service) ? 'bg-[#06D6A0]' : 'bg-[#262626]'
+                        selectedServices.includes(service) ? 'bg-[#0F172A]' : 'bg-[#0F172A]'
                       }`}>
                         {selectedServices.includes(service) && (
                           <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
-                            <path d="M13.5 4.5L6 12L2.5 8.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M13.5 4.5L6 12L2.5 8.5" stroke="#06D6A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         )}
                       </div>
@@ -141,7 +141,7 @@ export default function ContactSection() {
             </div>
 
             {/* Your Budget Section */}
-            <div className="w-full max-w-[900px] h-[250px] rounded-[12px] bg-[#0F172A] p-[40px] space-y-[40px]">
+            <div className="w-full max-w-[900px] h-[250px] rounded-[12px] bg-[#0F172A] p-[24px]  space-y-[30px] bg-[#14243B]  rounded-[8px] ">
               <div>
                 <h3 className="font-barlow font-medium text-[22px] leading-[150%] text-white mb-2">
                   Your Budget
@@ -162,7 +162,7 @@ export default function ContactSection() {
             </div>
 
             {/* Your Message */}
-            <div className="space-y-4">
+            <div className="space-y-4  bg-[#14243B]  rounded-[8px] p-[24px]">
               <h3 className="font-barlow font-medium text-[22px] leading-[150%] text-white">
                 Your Message
               </h3>

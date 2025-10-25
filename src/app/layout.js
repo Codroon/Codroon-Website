@@ -5,7 +5,7 @@ import Navbar from "@/components/footer";
 
 const barlow = Barlow({
   subsets: ["latin"],
-  weight: ["600"], // SemiBold
+  weight: ["400", "500", "600"], // Regular, Medium, SemiBold
   variable: "--font-barlow",
 });
 

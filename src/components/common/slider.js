@@ -58,7 +58,7 @@ const BudgetSlider = ({ min = 1000, max = 5000, step = 100, value, onChange }) =
       </div>
 
       {/* Range Labels */}
-      <div className="flex justify-between mt-4 text-white font-barlow font-normal text-sm">
+      <div className="flex justify-between  text-white font-barlow font-normal text-sm">
         <span>${min}</span>
         <span>${max}</span>
       </div>

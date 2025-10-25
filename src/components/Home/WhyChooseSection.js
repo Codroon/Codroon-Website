@@ -27,28 +27,13 @@ export default function WhyChooseSection() {
         {/* Solar System Background Image */}
         <div className="absolute inset-0">
           <Image
-            src="/Images/solarSystem-codroon.png"
+            src="/Images/solarSystem-codroon.svg"
             alt="Codroon Solar System"
             width={1436}
             height={925.19}
             className="w-full h-full object-cover"
           />
         </div>
-        {/* Text placed over the pre-rendered green balls in image */}
-        <div className="absolute inset-0 z-10">
-            <span className="absolute top-[4%] left-[26%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
-              {features[0]}
-            </span>
-            <span className="absolute top-[4%] left-[40%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
-              {features[1]}
-            </span>
-            <span className="absolute top-[4%] left-[54%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
-              {features[2]}
-            </span>
-            <span className="absolute top-[4%] left-[68%] w-[124px] h-[72px] text-center text-black font-barlow font-semibold text-[20px] leading-tight">
-              {features[3]}
-            </span>
-          </div>
       </div>
     </div>
     </MarginWrapper>
