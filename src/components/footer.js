@@ -6,13 +6,13 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin } from 'lucide-react';
 const Footer = () => {
   // Define navigation links
   const navLinks = [
-    { name: 'Home', href: '#' },
-    { name: 'Services', href: '#' },
-    { name: 'Work', href: '#' },
-    { name: 'Process', href: '#' },
-    { name: 'About', href: '#' },
-    { name: 'Careers', href: '#' },
-    { name: 'Contact', href: '#' },
+    { name: 'Home', href: '/' },
+    { name: 'Solutions', href: '/solutions' },
+    { name: 'Products', href: '/case-studies' },
+    { name: 'Process', href: '/process' },
+    { name: 'Industries', href: '/industries' },
+    { name: 'Careers', href: '/careers' },
+    { name: 'Contact', href: '/contact-us' },
   ];
 
   // Define social links

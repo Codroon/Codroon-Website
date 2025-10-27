@@ -25,6 +25,7 @@ const Navbar = () => {
     { name: "Products", href: "/case-studies" },
     { name: "Process", href: "/process" },
     { name: "Industries", href: "/industries" },
+    { name: "Careers", href: "/careers" },
     { name: "Resources", href: "#", hasDropdown: true }
   ].map(
     (item) => (
