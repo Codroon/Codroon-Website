@@ -14,7 +14,7 @@ export default function OurSolutionsSection() {
       description: "Our engineering team combines technical expertise with a passion for innovation to build robust and scalable digital solutions. We leverage the latest technologies and best practices to deliver high-performance applications tailored to your specific needs."
     },
     {
-      icon: "/Images/power.png", // Power icon for third column
+      icon: "/Images/Icons/power.png", // Power icon for third column
       title: "Mobile App Development",
       description: "Our experienced project management team ensures that your projects are delivered on time, within budget, and according to your specifications. We follow industry-standard methodologies and employ effective communication and collaboration tools to keep you informed throughout the development process."
     },
@@ -29,7 +29,7 @@ export default function OurSolutionsSection() {
       description: "Our engineering team combines technical expertise with a passion for innovation to build robust and scalable digital solutions. We leverage the latest technologies and best practices to deliver high-performance applications tailored to your specific needs."
     },
     {
-      icon: "/Images/power.png", // Power icon for third column
+      icon: "/Images/Icons/power.png", // Power icon for third column
       title: "SaaS Development",
       description: "Our experienced project management team ensures that your projects are delivered on time, within budget, and according to your specifications. We follow industry-standard methodologies and employ effective communication and collaboration tools to keep you informed throughout the development process."
     },

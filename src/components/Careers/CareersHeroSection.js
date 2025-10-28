@@ -2,28 +2,26 @@ import Image from "next/image";
 
 export default function CareersHeroSection() {
   return (
-    <section className="relative w-full h-[100vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+    <section className="relative w-full h-[342px] flex items-center justify-center overflow-hidden" style={{ top: '100px' }}>
+      {/* Background Image - same as previous pages */}
       <Image
-        src="/images/hero-banner.gif"
-        alt="Careers Hero Background"
+        src="/Images/furisticBusinessScene.jpg"
+        alt="Futuristic Business Scene"
         fill
         priority
-        className="object-cover opacity-25"
-        unoptimized
-      />
-
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-[#0F172A] opacity-[0.23]"></div>
+        className="object-cover opacity-25 "
+        />
+  
+    <div className="absolute inset-0 bg-indigo-900/70 mix-blend-multiply" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 w-full h-[686px] gap-[14px]">
-        <h1 className="mx-auto text-center font-barlow font-semibold text-[48px] leading-[120%] tracking-[0px] text-white max-w-[90vw] lg:max-w-[1200px]">
-          Join Our Team at Codroon
+      <div className="relative z-10 flex flex-col items-center justify-center text-center w-full h-full" style={{ paddingTop: '120px', paddingRight: '300px', paddingBottom: '120px', paddingLeft: '300px', gap: '14px' }}>
+        <h1 className="font-barlow font-semibold text-[48px] leading-[100%] tracking-[0%] text-center text-white">
+        Join Our Team at Codroon
         </h1>
 
-        <p className="font-barlow font-normal text-[18px] leading-[133%] tracking-[-0.6%] text-[#E6E6E6] max-w-[90vw] lg:max-w-[1000px]">
-          Unlock your potential and join our team of innovators and problem solvers.
+        <p className="font-barlow font-normal text-[20px] leading-[150%] tracking-[-0.6%] text-center text-white">
+        Unlock your potential and join our team of innovators and problem solvers.
         </p>
       </div>
     </section>

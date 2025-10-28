@@ -1,3 +1,4 @@
+import MarginWrapper from "../wrappers/sectionWrapper";
 export default function WhyWorkAtCodroonSection() {
   const benefits = [
     {
@@ -19,6 +20,7 @@ export default function WhyWorkAtCodroonSection() {
   ];
 
   return (
+    <MarginWrapper top={90}>
     <section className="w-full bg-[#0F172A] py-[120px]">
       <div className="container mx-auto px-4">
         <div className="max-w-[1595px] mx-auto">
@@ -64,5 +66,6 @@ export default function WhyWorkAtCodroonSection() {
         </div>
       </div>
     </section>
+    </MarginWrapper>
   );
 }
