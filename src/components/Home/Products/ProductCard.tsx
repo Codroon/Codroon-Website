@@ -1,0 +1,83 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { productHref, type Product } from "./data";
+
+/**
+ * ProductCard — screenshot filling the card top, inline metric row
+ * beneath the image, bold title, short descriptor, "VIEW PRODUCT →".
+ * Real content only: missing screenshot/descriptor/metrics are omitted
+ * (TODOs live in data.ts), never faked.
+ *
+ * The product NAME is the link (client, 2026-08-02), stretched over the
+ * whole card via its ::after — one anchor per card, named after the
+ * product, and every pixel still navigates. "View Product" is a visual
+ * affordance inside that click surface, not a second link.
+ */
+export function ProductCard({ product }: { product: Product }) {
+  return (
+    <li className="h-full">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface transition-colors duration-300 hover:border-border-strong">
+        {/* media — screenshot fills the card top */}
+        <div className="relative aspect-[16/9] w-full border-b border-border bg-surface-raised">
+          {product.screenshot ? (
+            <Image
+              src={product.screenshot}
+              alt={`${product.name} product screenshot`}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover object-top"
+            />
+          ) : (
+            /* TODO: real screenshot — empty media frame until one exists */
+            <div aria-hidden className="hero-dotgrid !inset-0" />
+          )}
+        </div>
+
+        <div className="flex flex-1 flex-col p-6 sm:p-8">
+          {/* metric row — real, verified numbers only */}
+          {product.metrics && product.metrics.length > 0 && (
+            <ul className="mb-5 flex flex-wrap gap-x-8 gap-y-3 border-b border-border pb-5">
+              {product.metrics.map((m) => (
+                <li key={m.label}>
+                  <span className="text-mono block text-xl text-foreground">{m.value}</span>
+                  <span className="text-small block text-muted-foreground">{m.label}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <h3 className="font-sans text-2xl font-semibold text-foreground">
+            <Link
+              href={productHref(product.slug)}
+              className="transition-colors after:absolute after:inset-0 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+            >
+              {product.name}
+            </Link>
+          </h3>
+          {product.descriptor && (
+            <p className="mt-2 text-[0.95rem] font-medium text-foreground/90">
+              {product.descriptor}
+            </p>
+          )}
+          {product.description && (
+            <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground">
+              {product.description}
+            </p>
+          )}
+
+          <span className="text-eyebrow mt-auto inline-flex items-center gap-2 pt-6 text-accent transition-colors group-hover:text-accent-hover">
+            View Product
+            <ArrowRight
+              size={13}
+              aria-hidden
+              className="transition-transform group-hover:translate-x-0.5"
+            />
+          </span>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+export default ProductCard;

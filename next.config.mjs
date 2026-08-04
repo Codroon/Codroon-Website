@@ -1,4 +1,102 @@
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  // Pin the workspace root (a stray package-lock.json in the home dir
+  // otherwise makes Turbopack guess wrong).
+  turbopack: { root: __dirname },
+
+  async redirects() {
+    return [
+      // Permanent redirects — these URLs exist on the current live site
+      // and must not 404 after deploy. (`permanent: true` issues a 308,
+      // the modern equivalent of a 301; search engines treat both as
+      // permanent.)
+      { source: "/case-studies", destination: "/products", permanent: true },
+      { source: "/codroon-ninja-ai", destination: "/products", permanent: true },
+
+      // ---- old-build pages deleted in the 2026-08-04 cleanup. Each was
+      // a live URL (or plausibly one — the old deployment's nav can no
+      // longer be inspected, and a redirect for a URL that never existed
+      // costs nothing, while a 404 on one that did costs the signal).
+      { source: "/contact-us", destination: "/", permanent: true },
+      { source: "/contact", destination: "/", permanent: true },
+      { source: "/industries", destination: "/services", permanent: true },
+      { source: "/solutions", destination: "/services", permanent: true },
+      { source: "/our-solutions", destination: "/services", permanent: true },
+      { source: "/technologies", destination: "/services", permanent: true },
+      { source: "/process", destination: "/about", permanent: true },
+      { source: "/how-we-work", destination: "/about", permanent: true },
+
+      // /services has NO index page in the rebuild (only /services/[slug]),
+      // so the four rules above would land on a 404 without this. It sends
+      // people to the services section of the landing page — the browser
+      // keeps the fragment across the redirect. If a real /services index
+      // is ever built, delete this line and the page takes over.
+      { source: "/services", destination: "/#services", permanent: true },
+
+      // The old About lived at /who-we-are and was serving 200. The
+      // route was deleted 2026-08-03 in favour of /about; deleting an
+      // indexed URL without a redirect just moves the 404 somewhere new.
+      { source: "/who-we-are", destination: "/about", permanent: true },
+
+      // ---- old /blogs URLs. All indexed; without these the rewrite
+      // ships 404s on live pages. Slugs supplied by the client and
+      // cross-checked against each deck's "Replaces:" line.
+      {
+        source: "/blogs/antigravity-google-vs-cursor-ai-the-future-of-coding-feels-different-now",
+        destination: "/blog/google-antigravity-vs-cursor",
+        permanent: true,
+      },
+      {
+        source: "/blogs/vercel-render-aws-a-developer-s-honest-deployment-guide",
+        destination: "/blog/vercel-vs-render-vs-aws",
+        permanent: true,
+      },
+      {
+        source: "/blogs/why-developers-are-moving-from-make-to-n8n-and-when-you-shouldn-t",
+        destination: "/blog/make-to-n8n-migration",
+        permanent: true,
+      },
+      {
+        source:
+          "/blogs/custom-ecommerce-vs-shopify-wordpress-choosing-the-right-canvas-for-your-store",
+        destination: "/blog/custom-ecommerce-vs-shopify",
+        permanent: true,
+      },
+      {
+        source: "/blogs/stitch-by-google-and-figma-what-it-gets-right-and-where-it-s-just-fine",
+        destination: "/blog/google-stitch-vs-figma",
+        permanent: true,
+      },
+      {
+        source: "/blogs/top-10-tools-every-saas-founder-should-know-in-2026",
+        destination: "/blog/saas-founder-tools-2026",
+        permanent: true,
+      },
+      {
+        source: "/blogs/auto-seo-explained-how-ai-learns-who-you-are-and-markets-you-better",
+        destination: "/blog/how-to-rank-in-ai-search",
+        permanent: true,
+      },
+      {
+        source: "/blogs/inside-codroon-the-texas-software-studio-that-builds-with-purpose",
+        destination: "/about",
+        permanent: true,
+      },
+      { source: "/blogs", destination: "/blog", permanent: true },
+
+      // Catch-all LAST, so the eight specific rules above win. Any old
+      // post not in that list still lands on the index instead of a
+      // 404. ⚠️ At least one such post exists ("Emergent Labs vs
+      // Lovable AI"); the client decides whether it gets its own
+      // destination, and until then this is the safe default.
+      { source: "/blogs/:slug", destination: "/blog", permanent: true },
+    ];
+  },
+};
 
 export default nextConfig;

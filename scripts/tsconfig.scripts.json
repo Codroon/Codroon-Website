@@ -1,0 +1,22 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // Pinned, NOT left to a --outDir flag. Without this, a failed
+    // `tsc -p` scatters compiled .js next to every .ts it touched,
+    // which then shadows the real sources in module resolution.
+    "outDir": "../.tsbuild",
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "ignoreDeprecations": "6.0",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "baseUrl": "..",
+    "rootDir": "..",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["render-emails.ts", "pricing-test-table.ts"],
+  "exclude": ["../node_modules", "../.next"]
+}
