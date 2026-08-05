@@ -3,7 +3,7 @@ import { SITE } from "@/config/site";
 /**
  * Digest emails for the two cron routes.
  *
- * The hourly one is an ALERT: it only ever arrives when there is
+ * The high-value one is an ALERT: it only ever arrives when there is
  * something to act on. The daily one is a REPORT: it arrives every day
  * whether or not anything happened, because a report that skips quiet
  * days stops being a baseline.

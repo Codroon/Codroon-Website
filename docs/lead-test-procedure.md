@@ -100,7 +100,7 @@ it, seed a completed estimate with a midpoint over $25,000 and no lead,
 then call it twice: the first run alerts, the second returns
 `found: 0`, because `mark_high_value_notified()` stamped the row.
 
-Vercel schedules both from `vercel.json` (hourly, and 09:00 UTC) and
+Vercel schedules both from `vercel.json` (04:00 and 09:00 UTC) and
 supplies the `Authorization` header automatically once `CRON_SECRET` is
 set as an environment variable.
 

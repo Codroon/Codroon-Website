@@ -4,12 +4,25 @@ import { highValueDigest, type HighValueRow } from "@/lib/email/digests";
 import { sendEmail } from "@/lib/email/send";
 
 /**
- * Hourly alert: completed estimates over $25,000 with no contact
- * details attached.
+ * Alert: completed estimates over $25,000 with no contact details
+ * attached.
+ *
+ * SCHEDULE — the intended cadence is HOURLY, and the query is written
+ * for it: it is a "since I last looked" sweep with no time window, so
+ * it stays correct at any interval. It runs DAILY at 04:00 UTC (09:00
+ * PKT) only because Vercel's Hobby plan triggers each cron job once a
+ * day. Restore `0 * * * *` in vercel.json when the account moves to
+ * Pro. Nothing else needs to change. (Comments cannot live in
+ * vercel.json — it is strict JSON and Vercel rejects unknown keys —
+ * so the note is here, next to the code it governs.)
+ *
+ * Until then a lead can sit unseen for up to 24 hours, so the daily
+ * digest at 09:00 UTC is the real safety net for anything this misses.
  *
  * This is an ALERT, not a report. Two rules follow from that:
- *   - nothing to say means nothing sent. An hourly "nothing to report"
- *     is how a useful alert becomes something you filter to a folder.
+ *   - nothing to say means nothing sent. A recurring "nothing to
+ *     report" is how a useful alert becomes something you filter to a
+ *     folder.
  *   - each estimate appears exactly once. The row is stamped after a
  *     successful send, so a retry or a redeploy cannot double-alert,
  *     and an estimate that sits there for days is not re-announced.

@@ -93,9 +93,15 @@ lost because email is misconfigured.
 Vercel. Worth knowing:
 
 1. **Cron schedules** ship in [`vercel.json`](vercel.json) —
-   `/api/cron/high-value` hourly, `/api/cron/daily` at 09:00 UTC. Both
-   routes require the `CRON_SECRET` Authorization header, which Vercel
-   sends automatically once the env var is set.
+   `/api/cron/high-value` at 04:00 UTC, `/api/cron/daily` at 09:00 UTC.
+   Both routes require the `CRON_SECRET` Authorization header, which
+   Vercel sends automatically once the env var is set.
+
+   The high-value alert is meant to run **hourly**; it is daily only
+   because the Hobby plan triggers each job once a day, and the build
+   fails outright if a schedule asks for more. Restore `0 * * * *` on
+   Pro. Hobby also treats the hour as approximate — a job set for 04:00
+   fires somewhere inside that hour.
 2. **Redirects** ship in [`next.config.mjs`](next.config.mjs): the old
    site's URLs (`/blogs/*`, `/case-studies`, `/who-we-are`,
    `/contact-us`, `/industries`, `/process`, `/solutions`, and friends)
