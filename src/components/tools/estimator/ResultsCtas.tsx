@@ -67,9 +67,22 @@ export function ResultsCtas({
 
   return (
     <>
+      {/* Below sm this is a flex COLUMN, which stretches its children.
+          "Email me this estimate" is a bare <button> so it stretched to
+          full width, while the primary sits inside MagneticButton's
+          inline-block wrapper and kept its intrinsic width — so the two
+          disagreed on a phone (client, 2026-08-04). Both are full width
+          there now, matching the closing CTAs everywhere else on the
+          site, and both revert to intrinsic width from sm up. */}
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <Button onClick={requestQuote}>{primaryLabel}</Button>
-        <OutlineButton size="sm" onClick={() => setEmailOpen(true)}>
+        <Button onClick={requestQuote} className="max-sm:w-full">
+          {primaryLabel}
+        </Button>
+        <OutlineButton
+          size="sm"
+          onClick={() => setEmailOpen(true)}
+          className="max-sm:w-full"
+        >
           {secondaryLabel}
         </OutlineButton>
       </div>

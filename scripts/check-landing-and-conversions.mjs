@@ -21,9 +21,50 @@ await p.goto("http://localhost:3000/", { waitUntil: "networkidle" });
   ok("'View Product' present ×2", (txt.match(/View Product/g) ?? []).length === 2);
   const imgs = await p.locator("#products img").evaluateAll((els) => els.map((e) => e.getAttribute("src")));
   ok("both card screenshots wired", imgs.length === 2 && imgs.every((s) => /01-(replydude|decipher)-site/.test(decodeURIComponent(s))), imgs.join(" | "));
-  const links = await p.locator("#products h3 a").evaluateAll((els) => els.map((a) => a.textContent + "→" + a.getAttribute("href")));
-  ok("headings are links to product pages",
-    links.length === 2 && links.includes("Decipher Engine→/products/decipher-engine") && links.includes("ReplyDude→/products/replydude"), links.join(", "));
+  // Two destinations per card (client, 2026-08-04): the heading opens
+  // the LIVE product in a new tab, everything else goes to the product
+  // page on this site.
+  const heads = await p.locator("#products h3 a").evaluateAll((els) =>
+    els.map((a) => ({
+      // firstChild, not innerText: the link also carries an sr-only span
+      text: (a.firstChild?.textContent ?? "").trim(),
+      href: a.getAttribute("href"),
+      target: a.getAttribute("target"),
+      rel: a.getAttribute("rel"),
+      z: getComputedStyle(a).zIndex,
+    }))
+  );
+  // the heading IS the live domain, in the client's own capitalisation
+  ok("headings read as the live domains",
+    heads.map((h) => h.text).sort().join(" | ") === "Decipherengine.ai | Replydude.ai",
+    heads.map((h) => h.text).join(" | "));
+  ok("headings link to the live products, new tab",
+    heads.length === 2 &&
+      heads.every((h) => /^https:\/\/(replydude|decipherengine)\.ai$/.test(h.href ?? "")) &&
+      heads.every((h) => h.target === "_blank" && /noopener/.test(h.rel ?? "") && /noreferrer/.test(h.rel ?? "")),
+    heads.map((h) => `${h.href} ${h.target}`).join(" | "));
+  // the heading must sit ABOVE the card-wide overlay or its click is
+  // swallowed by the View Product link that casts it
+  ok("headings clear the card overlay", heads.every((h) => h.z === "10"), heads.map((h) => h.z).join(" "));
+  const views = await p.locator("#products a").evaluateAll((els) =>
+    els.filter((a) => /view product/i.test(a.innerText)).map((a) => a.getAttribute("href"))
+  );
+  ok("View Product goes to the product pages",
+    views.length === 2 && views.includes("/products/decipher-engine") && views.includes("/products/replydude"),
+    views.join(", "));
+  ok("the products index is not linked from the landing page",
+    !(await p.locator('#products a[href="/products"]').count()));
+  // the section CTA converts now instead of navigating to the hidden index
+  const sectionCta = p.locator("#products button", { hasText: "Build something similar?" });
+  ok("section CTA reads 'Build something similar?'", (await sectionCta.count()) === 1);
+  ok("no 'View all products' left", !/View all products/i.test(txt));
+  await sectionCta.first().scrollIntoViewIfNeeded();
+  await sectionCta.first().click();
+  await p.waitForTimeout(700);
+  ok("section CTA opens the contact modal",
+    await p.locator('[role="dialog"]').isVisible().catch(() => false));
+  await p.keyboard.press("Escape");
+  await p.waitForTimeout(400);
   ok("ReplyDude descriptor trimmed", txt.includes("A cross-platform desktop AI agent.") && !txt.includes("agent running reply growth"));
   // whole card still clickable via the stretched link — click raw
   // coordinates over the IMAGE area; the anchor's ::after overlay is

@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
+import { FinalCta } from "@/components/Home/FinalCta";
 import { EstimatorPreviewCard } from "./EstimatorPreviewCard";
 import { SemanticComparisonTable } from "@/components/services/SemanticComparisonTable";
 import { FaqSection } from "@/components/services/FaqSection";
@@ -348,24 +349,20 @@ export function ToolLandingTemplate({
           </Section>
         )}
 
-        {/* ---- Final CTA — full-bleed band → the estimator ---- */}
+        {/* ---- Final CTA → the estimator ----
+             The shared FinalCta card, the same closing block the landing
+             page, /about, the service pages and the product pages all
+             use (client, 2026-08-04). It replaces a bespoke centred
+             full-bleed band that was the only closing CTA on the site
+             with its own layout. `ctaHref` sends the button into the
+             estimator instead of opening the contact modal. */}
         {content.finalCta && (
-          <section className="border-y border-border bg-surface py-20 sm:py-24">
-            <div className="mx-auto max-w-[1240px] px-6 text-center sm:px-8 lg:px-12">
-              <h2 className="text-h2 mx-auto max-w-2xl text-foreground">
-                {content.finalCta.heading}
-              </h2>
-              <p className="text-body-lg mx-auto mt-6 max-w-2xl text-muted-foreground">
-                {content.finalCta.body}
-              </p>
-              <div className="mt-8 flex justify-center">
-                <Button href={estimatePath} size="lg">
-                  {content.finalCta.cta}
-                  <ArrowRight className="size-[1.1em]" aria-hidden />
-                </Button>
-              </div>
-            </div>
-          </section>
+          <FinalCta
+            heading={content.finalCta.heading}
+            body={content.finalCta.body}
+            ctaLabel={content.finalCta.cta}
+            ctaHref={estimatePath}
+          />
         )}
       </article>
     </>

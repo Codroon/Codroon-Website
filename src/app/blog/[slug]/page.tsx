@@ -200,8 +200,15 @@ export default async function BlogPostPage({
 
               <KeyTakeaways items={post.keyTakeaways} />
 
+              {/* No width cap (client, 2026-08-04). The intro used to be
+                  max-w-2xl — 672px against the article column's 870px at
+                  1440 — so its lines broke ~200px early and it was the
+                  one block in the article that did not share the measure
+                  of the Key Takeaways box above it or the body below.
+                  It stays at text-body-lg: the size is the standfirst
+                  treatment, the width was the bug. */}
               {post.intro.length > 0 && (
-                <div className="max-w-2xl">
+                <div>
                   {post.intro.map((p, i) => (
                     <p key={i} className="text-body-lg mt-5 text-muted-foreground first:mt-0">
                       {p}

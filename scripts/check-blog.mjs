@@ -452,6 +452,58 @@ console.log("\n=== landing Insights band ===");
   await p.close();
 }
 
+/* ══════════ post page: one measure for the whole article ══════════
+ *
+ * The intro paragraphs were capped at max-w-2xl (672px) while the
+ * article column, the Key Takeaways box and every body paragraph ran to
+ * 870px at 1440 — so the standfirst broke ~200px early and was the one
+ * block that did not line up (client, 2026-08-04). Width only: the
+ * intro keeps its larger text-body-lg size.
+ */
+console.log("\n=== post page: intro shares the article measure ===");
+{
+  const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  p.on("console", (m) => { if (m.type() === "error") errs.push(m.text()); });
+  for (const w of [1440, 768, 375]) {
+    await p.setViewportSize({ width: w, height: 900 });
+    for (const slug of SLUGS) {
+      await p.goto(`${BASE}/blog/${slug}`, { waitUntil: "networkidle" });
+      await p.evaluate(() => document.fonts.ready);
+      await p.waitForTimeout(150);
+      const r = await p.evaluate(() => {
+        const art = document.querySelector("article");
+        if (!art) return null;
+        const round = (el) => Math.round(el.getBoundingClientRect().width);
+        const take = document.querySelector('[aria-labelledby="key-takeaways-h"]');
+        // the standfirst: text-body-lg paragraphs outside any <section>
+        const intro = [...art.querySelectorAll("p.text-body-lg")].filter((el) => !el.closest("section"))[0];
+        // body prose: inside the PostBody sections, excluding the takeaways box
+        const body = [...art.querySelectorAll("section p")].filter(
+          (el) => /(^|\s)text-body(\s|$)/.test(el.className) &&
+            !el.closest('[aria-labelledby="key-takeaways-h"]')
+        )[0];
+        return {
+          article: round(art),
+          takeaways: take ? round(take) : null,
+          intro: intro ? round(intro) : null,
+          body: body ? round(body) : null,
+          introSize: intro ? Math.round(parseFloat(getComputedStyle(intro).fontSize)) : null,
+          bodySize: body ? Math.round(parseFloat(getComputedStyle(body).fontSize)) : null,
+        };
+      });
+      ok(`${w} ${slug}: intro, takeaways and body share the measure`,
+        r && r.intro === r.article && r.body === r.article && r.takeaways === r.article,
+        r ? `article ${r.article} · intro ${r.intro} · body ${r.body} · takeaways ${r.takeaways}` : "no article");
+      // the SIZE difference is the design and must survive the width fix
+      if (w === 1440) {
+        ok(`${slug}: intro is still the larger standfirst size`,
+          r && r.introSize > r.bodySize, r ? `${r.introSize}px vs ${r.bodySize}px` : "");
+      }
+    }
+  }
+  await p.close();
+}
+
 /* ══════════ post page: the two rules and the footer edge ══════════
  *
  * Both were on EVERY post (client, 2026-08-04):

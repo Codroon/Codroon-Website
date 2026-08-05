@@ -37,11 +37,32 @@ export function AboutHero() {
         <div className="max-w-[15ch] sm:max-w-none">
           <Eyebrow>{ABOUT_HERO.eyebrow}</Eyebrow>
         </div>
+        {/* Only the CEILING moved, 6rem to 4.5rem: 96px was too big at
+            1440 (client, 2026-08-04), but 375 and 768 were never the
+            complaint. Keeping the 2.75rem floor and the 7vw step means
+            phone and tablet render exactly as before and only screens
+            above ~1030px change. It still runs larger than the shared
+            text-h1's 60px ceiling, because this is the one place the
+            display face is the whole design; it just no longer shouts.
+
+            The nowrap span is the fix for "co-found" splitting across
+            lines: browsers treat an existing hyphen as a break
+            opportunity, so the line could end on "co-" with "found" on
+            the next. Rendered from the same copy string rather than
+            retyped, so the deck stays the single source. */}
         <h1
           id="about-h1"
-          className="mt-7 max-w-[16ch] font-serif text-[clamp(2.75rem,7vw,6rem)] leading-[1.03] tracking-[-0.02em] text-foreground"
+          className="mt-7 max-w-[16ch] font-serif text-[clamp(2.75rem,7vw,4.5rem)] leading-[1.05] tracking-[-0.02em] text-foreground"
         >
-          {ABOUT_HERO.h1}
+          {ABOUT_HERO.h1.split(/(co-found)/).map((part, i) =>
+            part === "co-found" ? (
+              <span key={i} className="whitespace-nowrap">
+                {part}
+              </span>
+            ) : (
+              part
+            )
+          )}
         </h1>
         <p className="text-body-lg mt-8 max-w-[52ch] text-muted-foreground">
           {ABOUT_HERO.subhead}

@@ -99,9 +99,10 @@ export default async function ProductPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLdString(
+            // No "Products" crumb while /products is hidden — see the
+            // note in ProductPageTemplate.
             breadcrumbJsonLd([
               { name: "Home", path: "/" },
-              { name: "Products", path: "/products" },
               { name: product.name, path: productHref(product.slug) },
             ])
           ),
@@ -115,12 +116,8 @@ export default async function ProductPage({
                 Home
               </Link>
             </li>
-            <li aria-hidden>/</li>
-            <li>
-              <Link href="/products" className="transition-colors hover:text-foreground">
-                Products
-              </Link>
-            </li>
+            {/* the Products crumb is gone while the index is hidden —
+                it would have been a link to a 404 */}
             <li aria-hidden>/</li>
             <li aria-current="page" className="text-muted-foreground">
               {product.name}

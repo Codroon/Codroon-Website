@@ -16,17 +16,22 @@ import { CtaButton } from "@/components/contact/CtaButton";
  * reused there.
  *
  * Props default to the landing-page copy, so the homepage is unchanged.
- * /about passes its own deck copy and a secondary button.
+ * /about passes its own deck copy and a secondary button; the two
+ * estimator pages pass `ctaHref` because their closing CTA has to walk
+ * people into the estimator rather than open the contact modal.
  */
 export function FinalCta({
   heading = "Ready to ship your AI product?",
   body = "Walk us through your workflow on a free discovery call. You'll leave with a concrete plan, whether or not you build with us.",
   ctaLabel = "Get your free consultation",
+  /** when set the primary NAVIGATES here; otherwise it opens the modal */
+  ctaHref,
   secondary,
 }: {
   heading?: string;
   body?: string;
   ctaLabel?: string;
+  ctaHref?: string;
   secondary?: { label: string; href: string };
 } = {}) {
   return (
@@ -56,12 +61,19 @@ export function FinalCta({
                     interior at 375, so the button goes full width, wraps
                     its text and grows in height rather than overflowing. */}
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <CtaButton size="lg" className={CTA_FIT}>
-                {ctaLabel}
-                {/* the label wraps to two lines below sm; the arrow would
-                    then sit centred beside the block. It is decorative. */}
-                <ArrowRight className="size-[1.1em] shrink-0 max-sm:hidden" aria-hidden />
-              </CtaButton>
+              {ctaHref ? (
+                <Button href={ctaHref} size="lg" className={CTA_FIT}>
+                  {ctaLabel}
+                  <ArrowRight className="size-[1.1em] shrink-0 max-sm:hidden" aria-hidden />
+                </Button>
+              ) : (
+                <CtaButton size="lg" className={CTA_FIT}>
+                  {ctaLabel}
+                  {/* the label wraps to two lines below sm; the arrow would
+                      then sit centred beside the block. It is decorative. */}
+                  <ArrowRight className="size-[1.1em] shrink-0 max-sm:hidden" aria-hidden />
+                </CtaButton>
+              )}
               {secondary && (
                 <Button href={secondary.href} variant="secondary" size="lg" className={CTA_FIT}>
                   {secondary.label}

@@ -1,6 +1,6 @@
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { Button } from "@/components/ui/Button";
+import { CtaButton } from "@/components/contact/CtaButton";
 import { ProductCard } from "./ProductCard";
 import { FEATURED_PRODUCTS } from "./data";
 
@@ -9,6 +9,12 @@ import { FEATURED_PRODUCTS } from "./data";
  * card grid (screenshot top, metrics, title, descriptor, VIEW PROJECT).
  * Featured: Decipher Engine + ReplyDude. id="products" — the hero's
  * "See our work" CTA points here. Server-rendered.
+ *
+ * The closing CTA opens the contact modal rather than linking to
+ * /products (client, 2026-08-04): the index is hidden for now, and
+ * "Build something similar?" converts where "View all products" only
+ * navigated. The two featured cards still link to their own pages,
+ * which stay live and in the nav.
  */
 export function Products() {
   return (
@@ -32,9 +38,9 @@ export function Products() {
       </ul>
 
       <div className="mt-12">
-        <Button href="/products" variant="secondary" size="lg">
-          View all products
-        </Button>
+        <CtaButton variant="secondary" size="lg">
+          Build something similar?
+        </CtaButton>
       </div>
     </Section>
   );

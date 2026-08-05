@@ -68,9 +68,11 @@ export function ProductPageTemplate({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLdString(
+            // No "Products" crumb: /products is hidden and 404s in
+            // production, and a breadcrumb pointing at a 404 is worse
+            // than a two-step trail. Restore it if the index returns.
             breadcrumbJsonLd([
               { name: "Home", path: "/" },
-              { name: "Products", path: "/products" },
               { name: product.name, path: productHref(content.slug) },
             ])
           ),

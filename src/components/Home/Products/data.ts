@@ -21,6 +21,12 @@ export type Product = {
   /** TODO: real metrics — do not invent numbers */
   metrics?: ProductMetric[];
   liveUrl?: string;
+  /**
+   * How the live domain is written when it is used AS the card heading
+   * (client, 2026-08-04). Spelled out rather than derived from liveUrl
+   * so the capitalisation is the client's, not a transform's.
+   */
+  liveLabel?: string;
   /** featured products appear on the homepage grid */
   featured?: boolean;
 };
@@ -43,6 +49,7 @@ export const PRODUCTS: Product[] = [
     // Deck § META RAIL gives decipherengine.ai as the live product URL
     // (was pointing at the decipher-beta.vercel.app preview).
     liveUrl: "https://decipherengine.ai",
+    liveLabel: "Decipherengine.ai",
     featured: true,
     // TODO: real metrics
   },
@@ -58,6 +65,7 @@ export const PRODUCTS: Product[] = [
     // Same lead image as the product page's slider (client, 2026-08-02).
     screenshot: "/products/replydude/01-replydude-site.png",
     liveUrl: "https://replydude.ai",
+    liveLabel: "Replydude.ai",
     featured: true,
     // TODO: real metrics
   },

@@ -16,6 +16,10 @@
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Optional, cleanup only. The CHECKS always run as anon — that is the
+// point of this script — but anon cannot delete its own test rows
+// (DELETE is denied by design), so removal needs the service key.
+const SVC_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!URL_ || !KEY) {
   console.error(
@@ -54,13 +58,23 @@ const readable = (r) => r.status >= 200 && r.status < 300 && Array.isArray(r.bod
 
 console.log("\n══ RLS VERIFICATION — live Supabase, anon key ══\n");
 
-// a code we can read back
-const code = "z" + Math.random().toString(36).replace(/[^a-hjkmnp-z2-9]/g, "").slice(0, 3);
+// A VALID six-character code from the allowed alphabet. The previous
+// generation produced FOUR characters ("z" + slice(0,3)), which fails
+// the short_code format in both the policy's WITH CHECK and the table
+// constraint — and a WITH CHECK denial surfaces as the same
+// 42501/HTTP 401 as a missing grant, which sent the 2026-08-04
+// diagnosis chasing grants for what looked like one bug and was two.
+const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
+const code = Array.from(
+  { length: 6 },
+  () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]
+).join("");
 const created = await rest("estimates", {
   method: "POST",
   body: JSON.stringify({ short_code: code, tool: "mvp", answers: { industry: "b2b" } }),
 });
 ok("anon CAN insert an estimate", created.status === 201, `HTTP ${created.status}`);
+const wroteEstimate = created.status === 201;
 
 console.log("\n── the three required checks ──");
 
@@ -112,11 +126,15 @@ const leadForge = await rest("leads", {
 });
 ok("cannot insert an estimator-sourced lead directly", leadForge.status >= 400, `HTTP ${leadForge.status}`);
 
+// the run's code in the name makes this row uniquely identifiable, so
+// cleanup can never touch a real lead
+const leadMarker = `Live Check ${code}`;
 const modalLead = await rest("leads", {
   method: "POST",
-  body: JSON.stringify({ source: "modal_call", name: "Live Check", phone: "+10000000000" }),
+  body: JSON.stringify({ source: "modal_call", name: leadMarker, phone: "+10000000000" }),
 });
 ok("CAN insert a modal lead", modalLead.status === 201, `HTTP ${modalLead.status}`);
+const wroteLead = modalLead.status === 201;
 
 for (const v of [
   "v_estimate_funnel",
@@ -131,5 +149,64 @@ for (const v of [
 console.log(
   "\n" + (fails === 0 ? "ALL LIVE CHECKS PASS" : `${fails} LIVE CHECKS FAILED`) + "\n"
 );
-console.log(`(left behind test rows: estimate ${code} and one modal_call lead — delete them from the dashboard)\n`);
+
+/* ---- cleanup — runs on pass AND fail ---------------------------------
+   Removes exactly what this run created, nothing else: the estimate by
+   its unique short code, the lead by its per-run marker. Anon cannot
+   DELETE (by design — that denial is one of the checks above), so this
+   uses the service key when available. Cleanup failure never changes
+   the exit code: the verdict is the checks, not the housekeeping. */
+{
+  const wrote = [
+    wroteEstimate ? `estimate ${code}` : null,
+    wroteLead ? `modal_call lead "${leadMarker}"` : null,
+  ].filter(Boolean);
+
+  if (wrote.length === 0) {
+    console.log("(no test rows were written, nothing to clean up)\n");
+  } else if (!SVC_KEY) {
+    console.log(
+      `(SUPABASE_SERVICE_ROLE_KEY not set — left behind: ${wrote.join(", ")}. ` +
+        "Set it in .env.local and re-run, or delete them from the dashboard.)\n"
+    );
+  } else {
+    const svc = async (path, init = {}) => {
+      const res = await fetch(`${URL_}/rest/v1/${path}`, {
+        ...init,
+        headers: {
+          apikey: SVC_KEY,
+          Authorization: `Bearer ${SVC_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=representation",
+          ...(init.headers ?? {}),
+        },
+      });
+      let body = null;
+      try {
+        body = await res.json();
+      } catch {}
+      return { status: res.status, body };
+    };
+    try {
+      let cleaned = [];
+      if (wroteLead) {
+        const r = await svc(
+          `leads?source=eq.modal_call&name=eq.${encodeURIComponent(leadMarker)}`,
+          { method: "DELETE" }
+        );
+        cleaned.push(`${Array.isArray(r.body) ? r.body.length : "?"} lead`);
+      }
+      if (wroteEstimate) {
+        const r = await svc(`estimates?short_code=eq.${code}`, { method: "DELETE" });
+        cleaned.push(`${Array.isArray(r.body) ? r.body.length : "?"} estimate`);
+      }
+      console.log(`(cleaned up test data: ${cleaned.join(", ")})\n`);
+    } catch (err) {
+      console.log(
+        `(cleanup failed — left behind: ${wrote.join(", ")}. ${String(err).slice(0, 80)})\n`
+      );
+    }
+  }
+}
+
 process.exit(fails === 0 ? 0 : 1);

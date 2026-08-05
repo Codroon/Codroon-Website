@@ -8,7 +8,8 @@ import { absoluteUrl } from "@/lib/seo";
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPaths = [
     "/",
-    "/products",
+    // /products is hidden for now (client, 2026-08-04) and 404s in
+    // production. The individual product pages below are unaffected.
     "/blog",
     "/about",
     // /careers deleted on 2026-08-04 (client) — listing a 404 in the

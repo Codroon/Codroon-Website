@@ -15,8 +15,12 @@ const nextConfig = {
       // and must not 404 after deploy. (`permanent: true` issues a 308,
       // the modern equivalent of a 301; search engines treat both as
       // permanent.)
-      { source: "/case-studies", destination: "/products", permanent: true },
-      { source: "/codroon-ninja-ai", destination: "/products", permanent: true },
+      // /products is hidden for now (client, 2026-08-04) and 404s in
+      // production, so these two land on the landing page's products
+      // section instead — the browser keeps the fragment across a
+      // redirect. Point them back at /products if the index returns.
+      { source: "/case-studies", destination: "/#products", permanent: true },
+      { source: "/codroon-ninja-ai", destination: "/#products", permanent: true },
 
       // ---- old-build pages deleted in the 2026-08-04 cleanup. Each was
       // a live URL (or plausibly one — the old deployment's nav can no

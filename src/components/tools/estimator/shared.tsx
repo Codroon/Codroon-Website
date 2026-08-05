@@ -212,10 +212,12 @@ export function OutlineButton({
   children,
   onClick,
   size = "md",
+  className,
 }: {
   children: ReactNode;
   onClick?: () => void;
   size?: "sm" | "md" | "lg";
+  className?: string;
 }) {
   return (
     <button
@@ -227,7 +229,8 @@ export function OutlineButton({
           ? "h-13 px-8 text-body-lg"
           : size === "sm"
           ? "h-11 px-6 text-[0.95rem]"
-          : "h-12 px-7 text-[0.95rem]"
+          : "h-12 px-7 text-[0.95rem]",
+        className
       )}
     >
       {children}

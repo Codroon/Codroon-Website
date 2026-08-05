@@ -154,7 +154,19 @@ export function MobileMenu({ isOpen, onClose, isActive }: Props) {
                         transition={{ duration: 0.3, ease: easeOutExpo }}
                         className="overflow-hidden"
                       >
-                        <div className="flex flex-col gap-1 pb-4 pl-1">
+                        {/* One hairline down the left is the whole
+                            hierarchy signal, the same language as the
+                            rules on /about and the legal pages.
+
+                            It replaces a per-item dot (client,
+                            2026-08-04): the dots sat at ~10px while the
+                            labels started at ~34px, aligning with
+                            neither each other nor the parent row, and
+                            each dot needed a hard-coded translate-y
+                            nudge to fake baseline alignment. Now every
+                            child label starts on ONE column and the
+                            vertical fudge is gone. */}
+                        <div className="mb-3 flex flex-col border-l border-border pl-5">
                           {item.items.map((leaf) => {
                             const active = isActive(leaf.href);
                             return (
@@ -163,28 +175,23 @@ export function MobileMenu({ isOpen, onClose, isActive }: Props) {
                                 href={leaf.href}
                                 onClick={onClose}
                                 aria-current={active ? "page" : undefined}
-                                className={cn(
-                                  "flex items-baseline gap-3 rounded-[var(--radius-md)] px-3 py-3 transition-colors",
-                                  active ? "bg-surface-2" : "hover:bg-surface"
-                                )}
+                                // min-h keeps every row a real tap target
+                                // even when it is a single short label
+                                className="flex min-h-[44px] flex-col justify-center py-2"
                               >
                                 <span
-                                  aria-hidden
                                   className={cn(
-                                    "h-1.5 w-1.5 shrink-0 translate-y-1.5 rounded-full",
-                                    active ? "bg-accent" : "bg-border"
+                                    "text-lg transition-colors",
+                                    active ? "text-accent" : "text-foreground"
                                   )}
-                                />
-                                <span>
-                                  <span className="block text-lg text-foreground">
-                                    {leaf.label}
-                                  </span>
-                                  {leaf.descriptor && (
-                                    <span className="text-small block text-muted-foreground">
-                                      {leaf.descriptor}
-                                    </span>
-                                  )}
+                                >
+                                  {leaf.label}
                                 </span>
+                                {leaf.descriptor && (
+                                  <span className="text-small text-muted-foreground">
+                                    {leaf.descriptor}
+                                  </span>
+                                )}
                               </Link>
                             );
                           })}
