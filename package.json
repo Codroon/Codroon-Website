@@ -16,7 +16,7 @@
     "framer-motion": "^12.40.0",
     "geist": "^1.7.2",
     "lucide-react": "^0.546.0",
-    "next": "15.5.6",
+    "next": "15.5.22",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "server-only": "^0.0.1",
@@ -24,12 +24,36 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.4",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "playwright": "^1.61.0",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3"
+  },
+  "//": [
+    "REMOVE THESE OVERRIDES WHEN WE MOVE TO NEXT 16. They exist only",
+    "because Next 15.5.22 is the final 15.x release and it pins two",
+    "packages that later picked up advisories:",
+    "  postcss - Next 15 pins the exact version 8.4.31; four advisories",
+    "    (GHSA-qx2v-qp2m-jg93, -6g55-p6wh-862q, -r28c-9q8g-f849,",
+    "    -fxqj-rqcc-2cmp) are patched in 8.5.23+.",
+    "  sharp - Next 15 asks for ^0.34.3; the inherited libvips CVEs",
+    "    (GHSA-f88m-g3jw-g9cj) are patched in 0.35.0+.",
+    "Next 16.3.0 depends on postcss 8.5.23 and sharp ^0.35.3 directly,",
+    "so the upgrade makes both overrides redundant - delete this block",
+    "and the one below at that point.",
+    "NOTE: sharp 0.35 sits OUTSIDE Next 15's declared ^0.34.3 range, so",
+    "this is deliberately an unsupported pairing. It builds and renders",
+    "correctly (verified 2026-08-06), but that is why it is temporary.",
+    "Neither advisory was reachable on this deployment - the postcss",
+    "ones need attacker-controlled CSS, and there is no images.",
+    "remotePatterns config, so the optimizer only ever hands sharp",
+    "images that ship in this repo. Cleared for hygiene, not a breach."
+  ],
+  "overrides": {
+    "postcss": "^8.5.25",
+    "sharp": "^0.35.3"
   }
 }
