@@ -177,6 +177,24 @@ console.log("── estimator results ──");
   ok("comparison: no-code setup band", txt.includes("$2,000–$10,000 setup"));
   ok("comparison: no-code run cost carries the sub", txt.includes("$50–$500 / mo, climbs with usage"));
   // quote CTA → in-page Calendly modal, not a new tab
+  //
+  // Intercept /api/lead BEFORE clicking. This click fires the real
+  // conversion CTA, and .env.local points at the LIVE Supabase
+  // project, so every unintercepted run wrote a genuine lead row —
+  // roughly fifteen of them accumulated across three days of QA
+  // before anyone noticed (client, 2026-08-06). test-conversion-wiring
+  // already did this; this suite did not. What is under test here is
+  // the modal opening, never the write, so fulfilling with a 200 keeps
+  // the assertions honest without touching the database.
+  let leadWrites = 0;
+  await e.route("**/api/lead", async (route) => {
+    leadWrites++;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, stored: false }),
+    });
+  });
   let popup = null;
   e.context().on("page", (pg) => { popup = pg; });
   await e.locator("button", { hasText: "Get a fixed price quote" }).click();
@@ -186,10 +204,26 @@ console.log("── estimator results ──");
   const iframeSrc = await dialog.locator("iframe").getAttribute("src");
   ok("Calendly iframe themed", iframeSrc?.includes("calendly.com") && iframeSrc?.includes("background_color=232220"), iframeSrc ?? "none");
   ok("no new tab opened", popup === null);
+  // the CTA must still record intent — assert it fired, and that it
+  // was caught here rather than reaching the real database
+  ok("quote CTA recorded intent (intercepted, not written)", leadWrites === 1, `${leadWrites} call(s)`);
   await e.screenshot({ path: `${OUT}/v-quote-modal.png` });
   await e.keyboard.press("Escape");
-  await e.waitForTimeout(400);
-  ok("Escape closes it", (await dialog.count()) === 0);
+  // Wait for the node to actually detach instead of sleeping a fixed
+  // 400ms. The modal exits through AnimatePresence at 0.25s, so the
+  // old margin was ~150ms — and the full-page screenshot immediately
+  // above, plus Calendly still loading in the background, regularly
+  // ate it. That is the whole story behind the "Escape closes it"
+  // flake that failed roughly one run in three (2026-08-06); the
+  // handler itself was never at fault. Probed 6/6 closes at delays
+  // from 400ms to 12s once the wait is on the right condition.
+  let escapeClosed = true;
+  try {
+    await dialog.waitFor({ state: "detached", timeout: 4000 });
+  } catch {
+    escapeClosed = false;
+  }
+  ok("Escape closes it", escapeClosed && (await dialog.count()) === 0);
   await e.close();
 }
 

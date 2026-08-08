@@ -96,8 +96,63 @@ export async function POST(req: Request) {
   const shortCode =
     input.shortCode && isShortCode(input.shortCode) ? input.shortCode : null;
 
-  /* ---- write the lead -------------------------------------------- */
   const supabase = getSupabase();
+
+  /* ---- resolve the estimate FIRST --------------------------------
+     This lookup used to sit after the write, purely to build the
+     emails. It runs first now because the empty-row guard below has
+     to know whether the code resolves to a real estimate — a
+     syntactically valid short code that matches nothing would still
+     produce a lead linked to nothing. Same single round trip, just
+     earlier. */
+  let summary = null;
+  let estimateExists = false;
+  if (shortCode && supabase) {
+    try {
+      const { data } = await supabase.rpc("get_estimate", {
+        p_short_code: shortCode,
+      });
+      const row = data?.[0] as EstimateRow | undefined;
+      if (row) {
+        estimateExists = true;
+        summary = summariseEstimate(row);
+      }
+    } catch (err) {
+      console.error("[lead] estimate lookup failed", err);
+    }
+  }
+
+  /* ---- reject empty rows -----------------------------------------
+     A row with no contact details AND no estimate behind it is not a
+     lead — there is nothing in it to act on and nobody to act on it
+     with. These accumulated from QA runs hitting the real CTA against
+     a live database (client, 2026-08-06).
+
+     modal_meeting is the ONE exemption, and it is deliberate: it has
+     no form to submit and never carries an estimate, so it is empty
+     by construction. It records that someone opened the scheduler and
+     may have abandoned it, which is the only trace that flow leaves.
+     Drop the exemption and that signal disappears entirely.
+
+     A rejected write must never be visible to the visitor: every
+     caller is fire-and-forget, and the quote CTA opens Calendly
+     without waiting on this response. */
+  const hasContact = Boolean(
+    input.name?.trim() || email || input.phone?.trim() || input.message?.trim()
+  );
+  if (!hasContact && !estimateExists && input.source !== "modal_meeting") {
+    console.warn("[lead] empty write rejected", {
+      source: input.source,
+      shortCode,
+      reason: shortCode ? "short code resolved to no estimate" : "no short code",
+    });
+    return NextResponse.json(
+      { ok: false, error: "Nothing to record." },
+      { status: 400 }
+    );
+  }
+
+  /* ---- write the lead -------------------------------------------- */
   let written = false;
 
   if (supabase) {
@@ -135,20 +190,6 @@ export async function POST(req: Request) {
       source: input.source,
       shortCode,
     });
-  }
-
-  /* ---- look up the estimate for the emails ----------------------- */
-  let summary = null;
-  if (shortCode && supabase) {
-    try {
-      const { data } = await supabase.rpc("get_estimate", {
-        p_short_code: shortCode,
-      });
-      const row = data?.[0] as EstimateRow | undefined;
-      if (row) summary = summariseEstimate(row);
-    } catch (err) {
-      console.error("[lead] estimate lookup failed", err);
-    }
   }
 
   /* ---- email: best effort, never blocking ------------------------ */
