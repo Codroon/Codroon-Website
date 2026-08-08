@@ -175,8 +175,10 @@ export default function TermsPage() {
                   {TERMS_CONTACT.entities.map((e, i) => (
                     <span key={e.name} className={i > 0 ? "mt-6 block" : "block"}>
                       <span className="block text-foreground">{e.name}</span>
-                      {/* ⚠️ TODO: the Texas address. Renders the moment it
-                          is set in src/content/terms.ts. */}
+                      {/* Any address lines render the moment they are set
+                          in src/content/terms.ts. The Texas one that used
+                          to be pending here left with the partner entity
+                          on 2026-08-09. */}
                       {e.lines.map((l) => (
                         <span key={l} className="block">
                           {l}

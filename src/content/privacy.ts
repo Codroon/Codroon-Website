@@ -157,8 +157,20 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
     id: "who-we-are",
     h2: "Who we are",
     body: [
-      "Codroon (Pvt) Ltd is a private limited company registered in Islamabad, Pakistan. We operate in partnership with North Loop LLC, registered in Texas, United States.",
-      "This means your data may be handled by people in Pakistan and in the United States, and stored on servers in the United States and elsewhere depending on the provider. If you are contacting us from outside either country, you are consenting to that transfer by using the site.",
+      // The US partner entity came out 2026-08-09 (partnership pending).
+      // The transfer paragraph had to be rewritten rather than just
+      // trimmed: it opened "This means", leaning on the sentence that
+      // was removed, and it claimed data is handled by people in the
+      // United States. With no US entity that claim is not true, and
+      // overstating who touches personal data is exactly the kind of
+      // error a privacy policy must not make.
+      //
+      // What stays true is the storage half: Vercel, Supabase, Resend
+      // and Calendly are all listed as United States in the processor
+      // table above, so the cross-border transfer and the consent
+      // language it carries are still required.
+      "Codroon (Pvt) Ltd is a private limited company registered in Islamabad, Pakistan.",
+      "Your data is handled by people in Pakistan, and stored on servers in the United States and elsewhere depending on the provider. Wherever you are contacting us from, you are consenting to that transfer by using the site.",
       "For any question about your data, email privacy@codroon.com.",
     ],
   },
@@ -240,18 +252,16 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
 /**
  * §14. The address block.
  *
- * ⚠️ TODO (client): the Texas address. The deck has a "[Texas address]"
- * placeholder, so the line renders only once a real address is set — a
- * wrong address on a legal notice is worse than a missing one.
+ * The second entity and its "[Texas address]" TODO came out 2026-08-09
+ * with the pending partnership. The block renders through entities.map,
+ * so one entry is fine — nothing to change on the page. Add the entry
+ * back if the partnership is signed.
  */
 export const PRIVACY_CONTACT = {
   id: "contact",
   h2: "Contact",
   body: ["For anything in this policy, email privacy@codroon.com."],
-  entities: [
-    { name: "Codroon (Pvt) Ltd", lines: ["Islamabad, Pakistan"] },
-    { name: "In partnership with North Loop LLC", lines: [] as string[] },
-  ],
+  entities: [{ name: "Codroon (Pvt) Ltd", lines: ["Islamabad, Pakistan"] }],
 };
 
 /** The email referenced five times in the policy. */

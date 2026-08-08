@@ -62,7 +62,7 @@ export async function buildPreviews(origin?: string): Promise<PreviewItem[]> {
   const estimatorNote = estimatorNotification({
     source: "estimator_email",
     receivedAt: AT,
-    email: "sarah@northloop.co",
+    email: "sarah@brightpath.example",
     summary: sampleSummary,
   });
 

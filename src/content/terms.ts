@@ -84,10 +84,16 @@ export const TERMS_COMMITMENTS = {
  *
  * §19 GOVERNING LAW IS DELIBERATELY ABSENT. The deck has no copy for it,
  * only "[JURISDICTION — see notes]", and the note calls it the one
- * decision not to guess: a Pakistani company partnered with a Texas LLC
- * selling mostly to US founders. The deck's own steer is Texas law with
- * arbitration rather than courts, enforceable both ways under the New
- * York Convention. Send the clause and it renders with no other change.
+ * decision not to guess. The deck's steer was Texas law with arbitration
+ * rather than courts, enforceable both ways under the New York
+ * Convention. Send the clause and it renders with no other change.
+ *
+ * ⚠️ That steer assumed a US partner entity, which came out on
+ * 2026-08-09 while the partnership is pending. With only the Pakistani
+ * company contracting, Texas law is no longer the obvious answer —
+ * worth re-checking with whoever reviews these before the clause is
+ * written, rather than inheriting a choice made for a structure that
+ * is not currently in place.
  */
 export type TermsSection = { id: string; h2: string; body: string[] };
 
@@ -96,8 +102,15 @@ export const TERMS_SECTIONS: TermsSection[] = [
     id: "who-these-terms-are-with",
     h2: "Who these terms are with",
     body: [
-      'Codroon (Pvt) Ltd is a private limited company registered in Islamabad, Pakistan, operating in partnership with North Loop LLC, registered in Texas, United States. In these terms, "we" and "Codroon" mean both entities as applicable to your engagement.',
-      "Which entity contracts with you depends on the engagement, and will be named in your project agreement.",
+      // The US partner entity came out 2026-08-09: that partnership is
+      // pending and must not be stated as fact. Its removal also took
+      // the two-entity scaffolding with it — "we means both entities"
+      // and "which entity contracts with you" describe a structure that
+      // is not currently in place, and a terms page that names a
+      // counterparty arrangement that does not exist yet is worse than
+      // one that stays quiet about it. Restore both lines alongside the
+      // partner if and when it is signed.
+      'Codroon (Pvt) Ltd is a private limited company registered in Islamabad, Pakistan. In these terms, "we" and "Codroon" mean that company.',
       "These terms apply to anyone using codroon.com and to anyone engaging us for work, unless a signed agreement says otherwise.",
     ],
   },
@@ -271,17 +284,16 @@ export const TERMS_GOVERNING_LAW: { id: string; h2: string; body: string[] | nul
 /**
  * §21. The contact block.
  *
- * ⚠️ TODO (client): the Texas address. The deck has a "[Texas address]"
- * placeholder, so the line renders only once a real address is set.
+ * The second entity and its "[Texas address]" TODO came out 2026-08-09
+ * with the pending partnership. The block renders through entities.map,
+ * so one entry is fine — nothing to change on the page. Add the entry
+ * back if the partnership is signed.
  */
 export const TERMS_CONTACT = {
   id: "contact",
   h2: "Contact",
   body: ["Questions about these terms: legal@codroon.com"],
-  entities: [
-    { name: "Codroon (Pvt) Ltd", lines: ["Islamabad, Pakistan"] },
-    { name: "In partnership with North Loop LLC", lines: [] as string[] },
-  ],
+  entities: [{ name: "Codroon (Pvt) Ltd", lines: ["Islamabad, Pakistan"] }],
 };
 
 /** The address §21 points at. */

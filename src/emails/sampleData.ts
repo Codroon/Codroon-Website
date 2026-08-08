@@ -87,7 +87,9 @@ export const sampleSummaryWithCuts: EstimateSummary = {
 
 export const sampleCallLead = {
   name: "Sarah Whitfield",
-  email: "sarah@northloop.co",
+  // fictional fixture domain — deliberately not a real or partner
+  // company, so preview output never implies a relationship
+  email: "sarah@brightpath.example",
   phone: "+1 (214) 555 0148",
   message:
     "We run quotes through three spreadsheets and a shared inbox. Want to know if an agent can own the whole thing end to end.",
