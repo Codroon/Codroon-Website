@@ -266,11 +266,47 @@ export function ContactModal({
 
             {view === "meeting" && (
               <div className="mt-4">
-                <iframe
-                  src={calendlyUrl(calendlyParams)}
-                  title="Schedule a meeting with Codroon (Calendly)"
-                  className="h-[62vh] min-h-[420px] w-full rounded-[var(--radius-md)] border border-border bg-surface-raised"
-                />
+                {/* The embed is cross-origin, so nothing we ship can style
+                    inside it — the badge can only be covered from out
+                    here. Measured 2026-08-06: the ribbon is a 105x105
+                    square pinned to top-0/right-0, and it stays 105x105
+                    at every width (checked at 446 and 330), so a fixed
+                    patch is enough. It is position:sticky, so it also
+                    survives scrolling inside the embed.
+
+                    WHY THIS IS FRAGILE. Calendly's class names are
+                    hashed per deploy (zzii_0xdazpec5x7l3cz), so there is
+                    nothing stable to target even in principle, and
+                    nothing warns us if they move or resize it — the
+                    patch would simply stop lining up, or start covering
+                    real UI. Check this corner after any report of the
+                    scheduler looking wrong.
+
+                    The proper fix is Calendly Standard, which removes
+                    the badge at the account level AND makes the
+                    background_color/text_color/primary_color params in
+                    calendlyUrl() start working; they are ignored on the
+                    free plan, which is why the card renders white
+                    inside a dark modal. Delete this patch then.
+
+                    The wrapper carries the radius and border so the
+                    patch needs no corner rounding of its own, and it is
+                    white to match the card and to keep the panel from
+                    flashing dark-then-white while the embed loads. */}
+                <div className="relative overflow-hidden rounded-[var(--radius-md)] border border-border bg-white">
+                  <iframe
+                    src={calendlyUrl(calendlyParams)}
+                    title="Schedule a meeting with Codroon (Calendly)"
+                    className="block h-[62vh] min-h-[420px] w-full"
+                  />
+                  {/* pointer-events-none is load-bearing: later booking
+                      steps put real controls near this corner, and a
+                      solid patch would swallow those clicks. */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute right-0 top-0 h-[106px] w-[106px] bg-white"
+                  />
+                </div>
                 <p className="mt-3 text-small text-muted-foreground">
                   The scheduler is provided by Calendly. If it doesn&apos;t
                   load,{" "}
