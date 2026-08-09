@@ -12,6 +12,26 @@ import { FOOTER_COLUMNS, CONTACT, SOCIALS, TAGLINE } from "@/config/footer";
 
 const ICONS = { linkedin: Linkedin, x: Twitter, github: Github } as const;
 
+/**
+ * Width of each footer nav column, keyed to the longest label it holds.
+ * These plus the brand (2) and Contact (2) must total exactly 12, or a
+ * column drops to a second row on its own.
+ *
+ *   brand 2 + Products 2 + Services 3 + Tools 2 + Company 1 + Contact 2
+ *
+ * Written as whole class strings, never composed, because Tailwind's
+ * scanner only sees literals and cn() cannot resolve a conflict between
+ * two col-span utilities.
+ */
+const COLUMN_SPAN: Record<string, string> = {
+  Products: "lg:col-span-2",
+  // "Custom Software Development Company" is the longest label here
+  Services: "lg:col-span-3",
+  Tools: "lg:col-span-2",
+  // only "About" and "Blog"
+  Company: "lg:col-span-1",
+};
+
 function FootLink({ name, href }: { name: string; href: string }) {
   return (
     <Link
@@ -59,9 +79,21 @@ const Footer = () => {
         {...shellProps}
         className="mx-auto max-w-[1240px] px-6 pt-16 sm:px-8 lg:px-12"
       >
+        {/* The lg spans must total exactly 12. Adding the Tools column
+            took them to 14 (3+2+3+2+2+2) and pushed Contact onto a
+            second row on its own, with the whole right side of the
+            footer empty (client, 2026-08-09).
+
+            Back to 12 as 2+2+3+2+1+2. The two spans that gave way are
+            the ones with slack: the brand block holds a wordmark and a
+            short tagline that simply wraps a line further, and Company
+            holds only "About" and "Blog", which fit a single span with
+            room to spare. Services keeps 3 because its longest label is
+            "Custom Software Development Company", and Contact keeps 2
+            because it has to hold an email address on one line. */}
         <div className="grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-12 lg:gap-8">
           {/* Brand */}
-          <motion.div variants={fadeUp} className="col-span-2 md:col-span-3 lg:col-span-3">
+          <motion.div variants={fadeUp} className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" aria-label="Codroon — home" className="inline-block">
               <Wordmark />
             </Link>
@@ -90,13 +122,21 @@ const Footer = () => {
                 dead form until then. */}
           </motion.div>
 
-          {/* Nav columns: Products / Services / Company */}
-          {FOOTER_COLUMNS.map((col, i) => (
+          {/* Nav columns: Products / Services / Tools / Company.
+
+              ONE span class each, from the map above. cn() is a plain
+              joiner, not tailwind-merge, so cn("lg:col-span-2", cond &&
+              "lg:col-span-1") ships BOTH and the stylesheet's own order
+              decides the winner. col-span-2 sorts after col-span-1, so
+              the narrow override silently lost; the previous
+              index-based version only worked because col-span-3 happens
+              to sort after col-span-2 (client, 2026-08-09). */}
+          {FOOTER_COLUMNS.map((col) => (
             <motion.nav
               key={col.title}
               variants={fadeUp}
               aria-label={col.title}
-              className={cn("lg:col-span-2", i === 1 && "lg:col-span-3")}
+              className={COLUMN_SPAN[col.title] ?? "lg:col-span-2"}
             >
               <h2 className="text-eyebrow mb-4 text-muted-foreground">{col.title}</h2>
               <ul className="flex flex-col gap-3">

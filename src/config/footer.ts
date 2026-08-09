@@ -18,12 +18,30 @@ import { SITE } from "./site";
 export type FooterLink = { name: string; href: string };
 export type FooterColumn = { title: string; links: FooterLink[] };
 
-/** The nav's Tools dropdown is the single source of truth for these. */
+/**
+ * The nav's Tools dropdown is the single source of truth for WHICH
+ * tools exist; the footer just labels them more briefly.
+ *
+ * "AI Agent Cost Calculator" needs 171px on one line and the column is
+ * 164px, so the full nav label wrapped (client, 2026-08-09). Widening
+ * the column is not available: six footer blocks already exceed the
+ * row. A footer nav using shorter labels than the header is normal, and
+ * the full phrase is still the anchor text in the header on every page,
+ * plus the in-body link on each service page, so nothing is lost.
+ */
+const FOOTER_TOOL_NAMES: Record<string, string> = {
+  "/tools/ai-agent-cost-calculator": "AI Agent Calculator",
+  "/tools/mvp-cost-calculator": "MVP Calculator",
+};
+
 const TOOL_LINKS: FooterLink[] = (
   navItems.find((i) => isDropdown(i) && i.label === "Tools") as
     | { items: { label: string; href: string }[] }
     | undefined
-)?.items.map((t) => ({ name: t.label, href: t.href })) ?? [];
+)?.items.map((t) => ({
+  name: FOOTER_TOOL_NAMES[t.href] ?? t.label,
+  href: t.href,
+})) ?? [];
 
 export const FOOTER_COLUMNS: FooterColumn[] = [
   {
