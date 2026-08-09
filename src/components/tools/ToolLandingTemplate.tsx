@@ -64,13 +64,13 @@ export function ToolLandingTemplate({
         <Section className="pt-36 sm:pt-40" spacing="compact" containerWidth="wide">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-10">
             <div>
-              <div className="anim-rise">
+              <div className="anim-rise-lcp">
                 <Eyebrow>{content.hero.eyebrow}</Eyebrow>
               </div>
-              <h1 className="text-h1 anim-rise anim-delay-1 mt-6 text-foreground">
+              <h1 className="text-h1 anim-rise-lcp anim-delay-1 mt-6 text-foreground">
                 {content.hero.h1}
               </h1>
-              <p className="text-body-lg anim-rise anim-delay-2 mt-6 max-w-xl text-muted-foreground">
+              <p className="text-body-lg anim-rise-lcp anim-delay-2 mt-6 max-w-xl text-muted-foreground">
                 {content.hero.subhead}
               </p>
               <div className="anim-rise anim-delay-3 mt-9">
@@ -112,7 +112,7 @@ export function ToolLandingTemplate({
                   className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 sm:p-8"
                 >
                   {/* numerals are not actions — accent-dim */}
-                  <span aria-hidden className="text-mono text-3xl text-accent-dim">
+                  <span aria-hidden className="text-mono text-3xl text-muted-foreground">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="mt-4 font-sans text-lg font-semibold text-foreground">
@@ -142,7 +142,7 @@ export function ToolLandingTemplate({
                   key={item.title}
                   className="grid gap-4 border-t border-border py-7 last:border-b sm:grid-cols-12 sm:gap-8"
                 >
-                  <span aria-hidden className="text-mono text-3xl text-accent-dim sm:col-span-1">
+                  <span aria-hidden className="text-mono text-3xl text-muted-foreground sm:col-span-1">
                     {i + 1}
                   </span>
                   <div className="sm:col-span-11">

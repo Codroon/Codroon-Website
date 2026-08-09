@@ -23,8 +23,10 @@ export function Eyebrow({ children, number, className }: EyebrowProps) {
     >
       {number && (
         <>
-          {/* numerals are not actions — accent-dim, never accent */}
-          <span className="text-accent-dim">{number}</span>
+          {/* Numerals are informative, so they need 4.5:1. --accent-dim
+                    could not reach it on either surface without becoming the
+                    accent itself, so it is decoration-only now. */}
+          <span className="text-muted-foreground">{number}</span>
           <span aria-hidden className="h-px w-6 bg-border" />
         </>
       )}

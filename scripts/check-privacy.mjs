@@ -79,7 +79,7 @@ console.log("\n── structure ──");
     return { text: el.innerText.trim(), font: cs.fontFamily, size: parseFloat(cs.fontSize), top: Math.round(el.getBoundingClientRect().top + window.scrollY) };
   });
   ok("last-updated is present and near the top", dateEl && dateEl.top < 500, `${dateEl?.text} @${dateEl?.top}px`);
-  ok("last-updated is in the display face", /Bricolage/.test(dateEl?.font ?? ""), dateEl?.font);
+  ok("last-updated is in the display face", /bricolage/i.test(dateEl?.font ?? ""), dateEl?.font);
   ok("last-updated is prominent, not small", (dateEl?.size ?? 0) >= 22, `${dateEl?.size}px`);
 }
 

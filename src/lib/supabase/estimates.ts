@@ -1,4 +1,4 @@
-import { getSupabase } from "./client";
+import { getSupabaseLazy } from "./lazyClient";
 import type { EstimateRow, LeadSource, ToolKey } from "./types";
 
 /**
@@ -56,7 +56,7 @@ export async function createEstimate(
   shortCode: string,
   answers: Record<string, unknown>
 ): Promise<string | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabaseLazy();
   if (!supabase) return null;
 
   let code = shortCode;
@@ -80,7 +80,7 @@ export async function updateEstimate(
     completed?: boolean;
   }
 ): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabaseLazy();
   if (!supabase) return;
   await supabase.rpc("update_estimate", {
     p_short_code: shortCode,
@@ -94,7 +94,7 @@ export async function updateEstimate(
 export async function fetchEstimate(
   shortCode: string
 ): Promise<EstimateRow | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabaseLazy();
   if (!supabase) return null;
   const { data, error } = await supabase.rpc("get_estimate", {
     p_short_code: shortCode,
@@ -116,7 +116,7 @@ export async function createLead(input: {
   phone?: string | null;
   message?: string | null;
 }): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabaseLazy();
   if (!supabase) return;
   await supabase.rpc("create_lead", {
     p_source: input.source,

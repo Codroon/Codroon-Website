@@ -29,15 +29,15 @@ export function Hero() {
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-10">
           {/* Copy — left */}
           <div>
-            <div className="anim-rise">
+            <div className="anim-rise-lcp">
               <Eyebrow>AI-Native Software Studio</Eyebrow>
             </div>
 
-            <h1 className="text-h1 anim-rise anim-delay-1 mt-6 text-foreground">
+            <h1 className="text-h1 anim-rise-lcp anim-delay-1 mt-6 text-foreground">
               Ship your AI product in weeks, not months.
             </h1>
 
-            <p className="text-body-lg anim-rise anim-delay-2 mt-6 max-w-xl text-muted-foreground">
+            <p className="text-body-lg anim-rise-lcp anim-delay-2 mt-6 max-w-xl text-muted-foreground">
               Book a free discovery call and walk us through your workflow.
               You&apos;ll leave with a plan and a fast path to your MVP,
               automation, or AI agent.

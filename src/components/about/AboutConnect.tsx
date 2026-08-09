@@ -70,7 +70,11 @@ export function AboutConnect({ video }: { video?: React.ReactNode }) {
                     <button
                       type="button"
                       onClick={() => open(o.view)}
-                      className="group flex w-full items-center gap-4 rounded-[var(--radius-md)] border border-border bg-background p-4 text-left transition-colors duration-200 hover:border-border-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      // outline-accent-foreground, not outline-accent:
+                      // this list sits on the orange band, so an accent
+                      // ring would be orange on orange even now that the
+                      // global rule is layered and can be overridden
+                      className="group flex w-full items-center gap-4 rounded-[var(--radius-md)] border border-border bg-background p-4 text-left transition-colors duration-200 hover:border-border-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-foreground"
                     >
                       <span className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-border bg-surface text-accent">
                         <Icon size={20} aria-hidden />

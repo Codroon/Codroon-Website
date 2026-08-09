@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { useRevealArmed } from "@/hooks/useRevealArmed";
 import { staggerContainer, fadeUp } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { Globe } from "./Globe";
@@ -17,18 +18,30 @@ import { DIFFERENTIATORS } from "./data";
  */
 export function WhyCodroon() {
   const reduced = usePrefersReducedMotion();
+  const armed = useRevealArmed();
+  const Shell = armed ? motion.div : "div";
   const globeRef = useRef<HTMLDivElement>(null);
   const inView = useInView(globeRef, { amount: 0.2 });
 
   return (
     <Section id="why-codroon" containerWidth="wide">
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-        {/* Copy — left */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-10%" }}
-          variants={staggerContainer}
+        {/* Copy — left.
+
+            Plain div until the client is up, so the eyebrow, the H2 and
+            the three numbered points are visible in the HTML instead of
+            carrying framer's serialised opacity:0. Children inherit
+            their variant from this element, so with a plain parent they
+            simply render in place. See useRevealArmed. */}
+        <Shell
+          {...(armed
+            ? {
+                initial: "hidden" as const,
+                whileInView: "visible" as const,
+                viewport: { once: true, margin: "-10%" },
+                variants: staggerContainer,
+              }
+            : {})}
         >
           <motion.div variants={fadeUp}>
             <Eyebrow>Why Codroon</Eyebrow>
@@ -40,8 +53,10 @@ export function WhyCodroon() {
           <div className="mt-10 flex flex-col gap-8">
             {DIFFERENTIATORS.map((d, i) => (
               <motion.div key={d.title} variants={fadeUp} className="flex gap-5">
-                {/* numerals are not actions — accent-dim, never accent */}
-                <span className="text-mono mt-1 text-sm text-accent-dim">
+                {/* Numerals are informative, so they need 4.5:1. --accent-dim
+                    could not reach it on either surface without becoming the
+                    accent itself, so it is decoration-only now. */}
+                <span className="text-mono mt-1 text-sm text-muted-foreground">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div>
@@ -55,7 +70,7 @@ export function WhyCodroon() {
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        </Shell>
 
         {/* Globe — right */}
         <div

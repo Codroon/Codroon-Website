@@ -3,6 +3,7 @@ import { Section } from "@/components/ui/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PostCard } from "@/components/blog/PostCard";
 import { getAllPosts, postHref } from "@/content/blog";
+import { getAuthor } from "@/content/blog/authors";
 import {
   absoluteUrl,
   blogJsonLd,
@@ -50,12 +51,17 @@ export default function BlogIndexPage() {
               name: "Notes from the studio",
               description: DESCRIPTION,
               path: "/blog",
+              // authorName was never passed, so every one of the seven
+              // blogPost entries here was authorless while the Article
+              // node on each post named one. Same posts, two different
+              // answers to "who wrote this" (client, 2026-08-09).
               posts: posts.map((p) => ({
                 title: p.title,
                 description: p.metaDescription,
                 path: postHref(p.slug),
                 publishedAt: p.publishedAt,
                 updatedAt: p.updatedAt,
+                authorName: getAuthor(p.author)?.name ?? "Codroon",
               })),
             })
           ),
@@ -78,10 +84,10 @@ export default function BlogIndexPage() {
       />
 
       <Section className="pt-36 sm:pt-40" spacing="compact" containerWidth="wide">
-        <div className="anim-rise">
+        <div className="anim-rise-lcp">
           <Eyebrow>Insights</Eyebrow>
         </div>
-        <h1 className="text-h1 anim-rise anim-delay-1 mt-5 max-w-2xl text-foreground">
+        <h1 className="text-h1 anim-rise-lcp anim-delay-1 mt-5 max-w-2xl text-foreground">
           Notes from the studio
         </h1>
       </Section>

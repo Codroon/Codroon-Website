@@ -46,7 +46,10 @@ for (const slug of SERVICES) {
     };
   });
   ok(`${slug}: no visible breadcrumb`, r.visible === 0 && !r.textTrail, `${r.visible} nav`);
-  ok(`${slug}: BreadcrumbList schema kept`, r.trail?.length === 3, (r.trail ?? []).join(" > "));
+  // Two crumbs, not three. The middle one was "/#services", a fragment
+  // on the homepage, so crumbs 1 and 2 resolved to the same document
+  // and claimed a hierarchy with no page behind it (2026-08-09).
+  ok(`${slug}: BreadcrumbList schema kept`, r.trail?.length === 2, (r.trail ?? []).join(" > "));
   ok(`${slug}: H1 sits high on the page`, r.h1Top !== null && r.h1Top < 400, `${r.h1Top}px`);
 }
 
@@ -124,9 +127,15 @@ console.log("\n── footer ──");
 
 console.log("\n── /careers is gone ──");
 {
-  collect = false; // this navigation SHOULD log a 404
+  collect = false;
+  // /careers used to 404, and this asserted that. It now redirects to
+  // /about: it was a real route on the old deployment and the only one
+  // deleted in a7a97d3 that never got a rule, so a 404 was throwing
+  // away the inbound signal (client, 2026-08-09). What still matters is
+  // that it does not RENDER a careers page and is not in the sitemap.
   const res = await p.goto(`${BASE}/careers`, { waitUntil: "domcontentloaded" });
-  ok("/careers returns 404", res.status() === 404, String(res.status()));
+  ok("/careers redirects rather than 404ing", res.status() === 200, String(res.status()));
+  ok("/careers lands on /about", new URL(p.url()).pathname === "/about", p.url());
   const xml = await (await fetch(`${BASE}/sitemap.xml`)).text();
   ok("sitemap has no /careers", !xml.includes("/careers"));
 }

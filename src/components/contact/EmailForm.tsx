@@ -9,6 +9,7 @@ import {
   SuccessNote,
   fieldBase,
   fieldError,
+  focusFirstInvalid,
 } from "./fields";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -35,7 +36,16 @@ export function EmailForm() {
     else if (!isEmail(email)) next.email = "That email doesn't look right.";
     if (!message) next.message = "Tell us a little about what you're building.";
     setErrors(next);
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length) {
+      // Focus the first thing that is actually wrong. Submit leaves
+      // focus on the button, so without this the user is told there is
+      // an error and left nowhere near it.
+      const form = e.currentTarget;
+      requestAnimationFrame(() =>
+        focusFirstInvalid(form, ["em-name", "em-email", "em-message"])
+      );
+      return;
+    }
 
     setStatus("submitting");
     try {
@@ -83,6 +93,7 @@ export function EmailForm() {
             id="em-name"
             name="name"
             type="text"
+            aria-required="true"
             autoComplete="name"
             placeholder="Your name"
             aria-invalid={!!errors.name}
@@ -98,6 +109,7 @@ export function EmailForm() {
             id="em-email"
             name="email"
             type="email"
+            aria-required="true"
             autoComplete="email"
             placeholder="you@company.com"
             aria-invalid={!!errors.email}
@@ -113,6 +125,7 @@ export function EmailForm() {
             id="em-message"
             name="message"
             rows={4}
+            aria-required="true"
             placeholder="A sentence or two about the workflow or product you have in mind…"
             aria-invalid={!!errors.message}
             aria-describedby={errors.message ? "em-message-err" : undefined}

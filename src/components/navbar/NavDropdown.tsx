@@ -1,11 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { easeOutExpo } from "@/lib/motion";
-import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import type { NavDropdown as NavDropdownType } from "@/config/nav";
 
 type Props = {
@@ -22,7 +19,6 @@ type Props = {
  * items, Escape closes and returns focus to the trigger.
  */
 export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) {
-  const reduced = usePrefersReducedMotion();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   // On touch, a single tap fires mouseenter (opens) THEN click — without
@@ -131,18 +127,38 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
         />
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            id={panelId}
-            role="menu"
-            aria-label={item.label}
-            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.98 }}
-            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-            exit={reduced ? { opacity: 0 } : { opacity: 0, y: 6, scale: 0.98 }}
-            transition={{ duration: 0.22, ease: easeOutExpo }}
-            className="absolute left-0 top-full z-50 mt-3 w-[20rem] origin-top-left rounded-[var(--radius-lg)] border border-border bg-surface/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl"
-          >
+      {/* ALWAYS RENDERED, never unmounted.
+
+          This panel used to be wrapped in {isOpen && ...}, so the six
+          service links, both product links and both calculator links
+          existed only after a click. In the server HTML and in the
+          hydrated DOM before interaction the entire <header> held three
+          anchors, which made the footer the site's only crawlable
+          navigation. The footer had no Tools column, so the two cost
+          calculators, the highest commercial-intent pages on the site,
+          had zero internal links from the homepage, the header, the
+          footer or any service page (client, 2026-08-09).
+
+          Hidden with CSS rather than unmounted: visibility:hidden keeps
+          the anchors in the document for crawlers while taking them out
+          of the tab order, and aria-hidden takes them out of the
+          accessibility tree, so a closed menu is not announced. The
+          fade is a CSS transition now; framer cannot animate an element
+          it does not mount, and a mounted-but-hidden panel is the whole
+          point. */}
+      <div
+        id={panelId}
+        role="menu"
+        aria-label={item.label}
+        aria-hidden={!isOpen}
+        className={cn(
+          "absolute left-0 top-full z-50 mt-3 w-[20rem] origin-top-left rounded-[var(--radius-lg)] border border-border bg-surface/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl",
+          "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
+          isOpen
+            ? "visible translate-y-0 scale-100 opacity-100"
+            : "invisible -translate-y-1 scale-[0.98] opacity-0"
+        )}
+      >
             {item.items.map((leaf, i) => {
               const active = isActive(leaf.href);
               return (
@@ -183,9 +199,7 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
                 </Link>
               );
             })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 }

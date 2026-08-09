@@ -25,7 +25,7 @@ export function BlogTeaser() {
     // directly on this surface is --accent-foreground (#232220).
     <section id="blog" aria-labelledby="home-blog-h" className="bg-accent py-24 sm:py-32">
       <Container width="wide">
-        <p className="text-eyebrow text-accent-foreground/80">Insights</p>
+        <p className="text-eyebrow text-accent-foreground">Insights</p>
         <h2 id="home-blog-h" className="text-h2 mt-5 max-w-2xl text-accent-foreground">
           Latest from the studio.
         </h2>

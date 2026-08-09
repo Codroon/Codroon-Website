@@ -28,6 +28,13 @@ export const dynamic = "force-dynamic";
 type StoredComputed = {
   snapshot?: PricingSnapshot;
   display?: { eyebrow: string; metaLine: string; panelLabel: string } | null;
+  /**
+   * The cut selection in force when the estimate was saved.
+   * useEstimatorFlow has always written this; this page simply never
+   * read it, so every share link rendered at zero cuts and quoted a
+   * higher price than the one the sender saw.
+   */
+  cuts?: string[];
 };
 
 export default async function SharedEstimatePage({
@@ -56,6 +63,12 @@ export default async function SharedEstimatePage({
         snapshot={computed.snapshot}
         answers={row.answers as Answers}
         display={computed.display ?? null}
+        initialCuts={Array.isArray(computed.cuts) ? computed.cuts : []}
+        // Without this the CTAs on a forwarded estimate posted no short
+        // code: the quote lead was rejected by the empty-row guard and
+        // the estimate email could not be built, so the visitor was
+        // told it had been sent when nothing was.
+        shortCode={shortCode.toLowerCase()}
       />
     </Container>
   );

@@ -4,9 +4,10 @@ import { useEffect, useRef } from "react";
 import { Container } from "@/components/ui/Container";
 import { agentConfig, AGENT_INTERRUPT_COMPARISON } from "@/pricing/agent.config";
 import { formatRange } from "@/pricing/calculate";
-import type { Answers, Estimate } from "@/pricing/types";
 import { ArchitectureDiagram, diagramState } from "./ArchitectureDiagram";
+import { describeAgent } from "./describe";
 import { AboveCeiling, EstimatorResults } from "./EstimatorResults";
+import { RunCostPanel } from "./RunCostPanel";
 import { agentCopy } from "./copy/agentCopy";
 import { BranchBlock, EstimatorHeader, QuestionBlock } from "./shared";
 import { useEstimatorFlow } from "./useEstimatorFlow";
@@ -18,41 +19,6 @@ import { useEstimatorFlow } from "./useEstimatorFlow";
  * Accent budget while answering (exactly three): the narrowing bar
  * fill, the selected option's 1px border, and the agent node's stroke.
  */
-
-const AGENT_LABELS: Record<string, string> = {
-  ecommerce: "Your e-commerce agent",
-  healthcare: "Your healthcare agent",
-  finance: "Your finance agent",
-  services: "Your services agent",
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  "simple-automation": "automation",
-  "single-task": "single-task agent",
-  "knowledge-agent": "knowledge agent",
-  "workflow-agent": "workflow agent",
-  "multi-agent": "multi-agent system",
-};
-
-/** Display strings for the results screen and the stored snapshot. */
-export function describeAgent(answers: Answers, estimate: Estimate) {
-  const industry = typeof answers.industry === "string" ? answers.industry : "";
-  const type = typeof answers.type === "string" ? answers.type : "";
-  return {
-    eyebrow: `Your estimate · ${TYPE_LABELS[type] ?? "AI agent"}`,
-    metaLine: [
-      estimate.timelineLabel,
-      estimate.runCost ? `${estimate.runCost.label} run cost` : null,
-      estimate.confidenceLabel,
-    ]
-      .filter(Boolean)
-      .join(" · "),
-    panelLabel:
-      answers.type !== undefined
-        ? AGENT_LABELS[industry] ?? "Your agent"
-        : "Your system",
-  };
-}
 
 export function AgentEstimator() {
   const flow = useEstimatorFlow(agentConfig, agentCopy, describeAgent);
@@ -101,32 +67,7 @@ export function AgentEstimator() {
                 className="max-w-[330px] lg:max-w-[420px]"
               />
             }
-            belowFold={
-              estimate.runCost && agentCopy.results.runCost ? (
-                /* accent panel — text on accent is ALWAYS #232220 */
-                <section className="mt-20 max-w-[600px]" aria-labelledby="est-run-h">
-                  <div className="rounded-[var(--radius-lg)] bg-accent p-6 sm:p-8">
-                    <h2
-                      id="est-run-h"
-                      className="text-eyebrow text-accent-foreground"
-                    >
-                      {agentCopy.results.runCost.label}
-                    </h2>
-                    <p className="mt-3 max-w-[56ch] text-[0.9rem] leading-relaxed text-accent-foreground">
-                      {agentCopy.results.runCost.covers}
-                    </p>
-                    <div className="mt-5 flex items-baseline justify-between gap-6 border-t-[0.5px] border-accent-foreground/25 pt-4">
-                      <span className="text-[0.95rem] font-medium text-accent-foreground">
-                        {agentCopy.results.runCost.totalLabel}
-                      </span>
-                      <span className="text-mono whitespace-nowrap text-[0.95rem] font-medium text-accent-foreground">
-                        {estimate.runCost.label}
-                      </span>
-                    </div>
-                  </div>
-                </section>
-              ) : null
-            }
+            belowFold={<RunCostPanel estimate={estimate} />}
             onToggleCut={flow.toggleCut}
             onBack={flow.back}
           />

@@ -23,7 +23,7 @@ export function ProductStatsBand({
 }) {
   return (
     <section className="bg-accent py-16 sm:py-20">
-      <h2 className="sr-only">{label}</h2>
+      <h2 className="sr-only text-accent-foreground">{label}</h2>
       <Container width="wide">
         <ul className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
           {stats.map((stat) => (

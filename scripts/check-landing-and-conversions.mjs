@@ -55,7 +55,10 @@ await p.goto("http://localhost:3000/", { waitUntil: "networkidle" });
   ok("the products index is not linked from the landing page",
     !(await p.locator('#products a[href="/products"]').count()));
   // the section CTA converts now instead of navigating to the hidden index
-  const sectionCta = p.locator("#products button", { hasText: "Build something similar?" });
+  // Conversion CTAs render as <a> now, not <button>: they carry a real
+  // href so a no-JS visitor still has a contact path, and JavaScript
+  // intercepts the click (2026-08-09). Match on either element.
+  const sectionCta = p.locator("#products a, #products button").filter({ hasText: "Build something similar?" });
   ok("section CTA reads 'Build something similar?'", (await sectionCta.count()) === 1);
   ok("no 'View all products' left", !/View all products/i.test(txt));
   await sectionCta.first().scrollIntoViewIfNeeded();

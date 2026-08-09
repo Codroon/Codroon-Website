@@ -61,6 +61,14 @@ export function ProductPageTemplate({
             url: canonical,
             // schema description mirrors the page's actual entity copy
             description: content.hero.subhead,
+            // The product's own first screenshot, only when one exists.
+            // No `offers` and deliberately NO aggregateRating: there are
+            // no published prices and no real reviews, and inventing
+            // either to fill a rich-result slot is exactly the kind of
+            // fabricated markup that gets a site penalised.
+            ...(product.screenshot
+              ? { image: absoluteUrl(product.screenshot) }
+              : null),
           }),
         }}
       />
@@ -86,7 +94,7 @@ export function ProductPageTemplate({
           {/* "PRODUCT · LIVE" — the status half renders in the accent
               (client, 2026-08-04). Split rather than hard-coded, so the
               copy stays the single source of truth. */}
-          <div className="anim-rise">
+          <div className="anim-rise-lcp">
             <Eyebrow>
               {(() => {
                 const [kind, ...state] = content.hero.eyebrow.split(" · ");
@@ -108,8 +116,21 @@ export function ProductPageTemplate({
               lines at 375 and filled the phone viewport. Narrowed on the
               wdth axis below sm only, which is the brief's sanctioned
               remedy: no size change, and desktop keeps the specified
-              wdth 100. */}
-          <h1 className="text-h1 anim-rise anim-delay-1 mt-6 max-w-4xl text-balance text-foreground max-sm:[font-stretch:88%]">
+              wdth 100.
+
+              MEASURE WIDENED 896px to 1152px (client, 2026-08-09). At
+              max-w-4xl the heading broke three lines up while its own
+              box was 896px wide and the container was 1440, and
+              text-balance then evened those three lines down to a
+              widest of 640px. The result was a narrow ragged block with
+              a quarter of the hero empty to its right.
+
+              text-balance STAYS. It is not the culprit and removing it
+              is worse: plain wrapping at this measure leaves a 141px
+              orphan on the last line of the ReplyDude heading. Measured
+              at 1440, balance at 1152 gives ReplyDude 847/965 and
+              Decipher 885/1086, two full lines each. */}
+          <h1 className="text-h1 anim-rise-lcp anim-delay-1 mt-6 max-w-6xl text-balance text-foreground max-sm:[font-stretch:88%]">
             {content.hero.h1}
           </h1>
 

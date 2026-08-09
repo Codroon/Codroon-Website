@@ -35,6 +35,53 @@ import type { ServicePageContent } from "@/content/services/types";
  *
  * Semantics: exactly one H1 (hero), every section an H2, no skips.
  */
+/**
+ * Which calculator answers "what does this cost" for each service.
+ *
+ * The MVP calculator covers product builds priced by scope and user
+ * types; the agent calculator covers anything priced by what the agent
+ * touches and what it costs to run. Every one of the six services maps
+ * to one of them, so no service page is left without the link.
+ */
+const CALCULATOR_FOR: Record<
+  string,
+  { href: string; label: string; trailing: string }
+> = {
+  "mvp-development": {
+    href: "/tools/mvp-cost-calculator",
+    label: "Price your MVP in about three minutes",
+    trailing: "with the cost calculator, no email needed to see the number.",
+  },
+  "saas-development": {
+    href: "/tools/mvp-cost-calculator",
+    label: "Price your SaaS build in about three minutes",
+    trailing: "with the cost calculator, no email needed to see the number.",
+  },
+  "custom-software-development": {
+    href: "/tools/mvp-cost-calculator",
+    label: "Price your build in about three minutes",
+    trailing: "with the cost calculator, no email needed to see the number.",
+  },
+  "ai-agent-development": {
+    href: "/tools/ai-agent-cost-calculator",
+    label: "Price your agent in about three minutes",
+    trailing:
+      "with the cost calculator, including what it costs to run each month.",
+  },
+  "generative-ai-development": {
+    href: "/tools/ai-agent-cost-calculator",
+    label: "Price your build in about three minutes",
+    trailing:
+      "with the AI cost calculator, including what it costs to run each month.",
+  },
+  "ai-integration": {
+    href: "/tools/ai-agent-cost-calculator",
+    label: "Price your integration in about three minutes",
+    trailing:
+      "with the AI cost calculator, including what it costs to run each month.",
+  },
+};
+
 export function ServicePageTemplate({
   service,
   content,
@@ -59,9 +106,14 @@ export function ServicePageTemplate({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLdString(
+            // Two levels, not three. Level 2 used to be "/#services",
+            // a fragment on the homepage, so crumbs 1 and 2 resolved to
+            // the SAME document and the trail claimed a hierarchy that
+            // does not exist: there is no /services index page in the
+            // rebuild (client, 2026-08-09). Add the middle crumb back
+            // if a real index is ever built.
             breadcrumbJsonLd([
               { name: "Home", path: "/" },
-              { name: "Services", path: "/#services" },
               { name: service.name, path: serviceHref(service.slug) },
             ])
           ),
@@ -77,13 +129,13 @@ export function ServicePageTemplate({
               the path under the result in search, and it is invisible. */}
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-10">
             <div>
-              <div className="anim-rise">
+              <div className="anim-rise-lcp">
                 <Eyebrow>{content.hero.eyebrow}</Eyebrow>
               </div>
-              <h1 className="text-h1 anim-rise anim-delay-1 mt-6 text-foreground">
+              <h1 className="text-h1 anim-rise-lcp anim-delay-1 mt-6 text-foreground">
                 {content.hero.h1}
               </h1>
-              <p className="text-body-lg anim-rise anim-delay-2 mt-6 max-w-xl text-muted-foreground">
+              <p className="text-body-lg anim-rise-lcp anim-delay-2 mt-6 max-w-xl text-muted-foreground">
                 {content.hero.subhead}
               </p>
               <div className="anim-rise anim-delay-3 mt-9">
@@ -168,7 +220,7 @@ export function ServicePageTemplate({
                       {card.title}
                     </h3>
                     {/* numerals are not actions — accent-dim */}
-                    <span aria-hidden className="text-mono text-2xl text-accent-dim">
+                    <span aria-hidden className="text-mono text-2xl text-muted-foreground">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                   </div>
@@ -235,7 +287,7 @@ export function ServicePageTemplate({
                   className="grid gap-4 border-t border-border py-8 last:border-b sm:grid-cols-12 sm:gap-8"
                 >
                   {/* numerals are not actions — accent-dim */}
-                  <span aria-hidden className="text-mono text-3xl text-accent-dim sm:col-span-1">
+                  <span aria-hidden className="text-mono text-3xl text-muted-foreground sm:col-span-1">
                     {step.n}
                   </span>
                   <div className="sm:col-span-11">
@@ -328,6 +380,29 @@ export function ServicePageTemplate({
                   </p>
                 ))}
               </div>
+              {/* The one in-body link from a service page to its
+                  calculator. Every service page has a "what this costs"
+                  section and none of them linked to the tool that
+                  answers exactly that question, which left both
+                  calculators with no inbound internal links at all
+                  (client, 2026-08-09). It sits here rather than in a
+                  nav because this is the moment the reader is asking
+                  the question.
+
+                  Underlined, not a button: the section's own CTA is the
+                  conversion path and a second filled control would
+                  compete with it. Text on accent is ALWAYS #232220. */}
+              {CALCULATOR_FOR[content.slug] && (
+                <p className="mt-8 text-body-lg text-accent-foreground">
+                  <Link
+                    href={CALCULATOR_FOR[content.slug].href}
+                    className="font-medium underline decoration-accent-foreground/40 underline-offset-4 transition-colors hover:decoration-accent-foreground"
+                  >
+                    {CALCULATOR_FOR[content.slug].label}
+                  </Link>{" "}
+                  {CALCULATOR_FOR[content.slug].trailing}
+                </p>
+              )}
             </div>
           </Section>
         )}

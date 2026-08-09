@@ -18,6 +18,18 @@ type OpenOptions = {
    * pass its own, so a later "Start a project" never inherits them.
    */
   calendlyParams?: Record<string, string>;
+  /**
+   * The caller has already recorded this visit, so the modal must not
+   * record it again.
+   *
+   * The estimator's quote CTA posts its own estimator_quote lead, which
+   * carries the short code and therefore says far more than a bare
+   * modal_meeting would. Without this the same click produced two rows:
+   * the useful one, plus an empty modal_meeting with no contact details
+   * and no estimate, which is exactly the row class that had to be
+   * purged from the table (client, 2026-08-09).
+   */
+  intentAlreadyRecorded?: boolean;
 };
 
 type ContactModalApi = {
@@ -39,12 +51,14 @@ export function ContactModalProvider({ children }: { children: ReactNode }) {
   const [calendlyParams, setCalendlyParams] = useState<
     Record<string, string> | undefined
   >(undefined);
+  const [intentAlreadyRecorded, setIntentAlreadyRecorded] = useState(false);
   const triggerRef = useRef<HTMLElement | null>(null);
 
   const open = useCallback((v: ModalView = "menu", opts?: OpenOptions) => {
     // remember the trigger so focus returns to it on close
     triggerRef.current = (document.activeElement as HTMLElement) ?? null;
     setCalendlyParams(opts?.calendlyParams);
+    setIntentAlreadyRecorded(Boolean(opts?.intentAlreadyRecorded));
     setView(v);
     setIsOpen(true);
   }, []);
@@ -64,6 +78,7 @@ export function ContactModalProvider({ children }: { children: ReactNode }) {
         isOpen={isOpen}
         view={view}
         calendlyParams={calendlyParams}
+        intentAlreadyRecorded={intentAlreadyRecorded}
         onViewChange={setView}
         onClose={close}
       />

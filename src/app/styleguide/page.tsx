@@ -28,7 +28,7 @@ const colorTokens = [
   { name: "--text-primary", value: "#EAE5E1", use: "headings / emphasis (brand)" },
   { name: "--accent", value: "#E96A42", use: "ACTIONS ONLY (brand)" },
   { name: "--accent-hover", value: "#F08557", use: "action hover (derived)" },
-  { name: "--accent-dim", value: "#A04A2E", use: "numerals, eyebrows (derived)" },
+  { name: "--accent-dim", value: "#A04A2E", use: "decoration only — fails 4.5:1, never for meaningful text" },
   { name: "--accent-foreground", value: "#232220", use: "the ONLY text on accent" },
   { name: "--success", value: "#5E9A6B", use: "with icon + text, never alone" },
   { name: "--error", value: "#B4453E", use: "with icon + text, never alone" },

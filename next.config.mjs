@@ -34,6 +34,12 @@ const nextConfig = {
       { source: "/technologies", destination: "/services", permanent: true },
       { source: "/process", destination: "/about", permanent: true },
       { source: "/how-we-work", destination: "/about", permanent: true },
+      // /careers was a real route on the old deployment: a7a97d3
+      // deleted src/app/careers/page.js along with its assets. Every
+      // other route deleted in that commit got a redirect and this one
+      // was missed, so it was the only old URL still 404ing. /about is
+      // the closest live page; there is no careers page in the rebuild.
+      { source: "/careers", destination: "/about", permanent: true },
 
       // /services has NO index page in the rebuild (only /services/[slug]),
       // so the four rules above would land on a 404 without this. It sends
@@ -99,6 +105,56 @@ const nextConfig = {
       // Lovable AI"); the client decides whether it gets its own
       // destination, and until then this is the safe default.
       { source: "/blogs/:slug", destination: "/blog", permanent: true },
+    ];
+  },
+
+  async headers() {
+    return [
+      {
+        /* Site-wide baseline. Cheap, no behaviour change, and none of
+           them can break a third party the way a CSP can.
+           CSP is deliberately NOT here yet: the site embeds Calendly
+           and loads three analytics vendors, so it needs a
+           report-only run first to find what it would break. */
+        source: "/:path*",
+        headers: [
+          // stop a browser second-guessing a declared Content-Type,
+          // which is how a served file becomes an executed script
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // send the origin cross-site, the full path same-site. Keeps
+          // referral analytics working without leaking paths, which
+          // matters most for /e/<code>: the code IS the capability.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // nothing here is meant to be framed
+          { key: "X-Frame-Options", value: "DENY" },
+          // decline hardware the site never asks for, so an embedded
+          // third party cannot prompt for it in our name
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), interest-cohort=()",
+          },
+        ],
+      },
+      {
+        // A short code is a bearer capability, so these must never be
+        // indexed. robots.txt still disallows /e/, but a Disallow only
+        // stops a well-behaved crawler that reads robots.txt first, and
+        // it cannot stop a URL being indexed from a link elsewhere. The
+        // header travels with the response and needs no cooperation.
+        //
+        // This backs up the per-page `robots` metadata rather than
+        // replacing it: the metadata covers the rendered page, the
+        // header covers every response from the route including
+        // redirects and errors.
+        source: "/e/:shortCode",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow, noarchive",
+          },
+        ],
+      },
     ];
   },
 };

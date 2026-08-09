@@ -13,6 +13,7 @@ import {
 } from "@/emails/render";
 import { sendEmail } from "@/lib/email/send";
 import { EMAIL } from "@/config/email";
+import { SITE } from "@/config/site";
 
 /**
  * The one route every lead comes through — all five sources, one pass:
@@ -69,6 +70,58 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { ok: false, error: "Too many requests. Try again shortly." },
       { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } }
+    );
+  }
+
+  /* ---- reject cross-origin and non-JSON, BEFORE parsing ----------
+     Two gaps, both closed here (client, 2026-08-09).
+
+     ORIGIN. The route did no origin check, so any page anywhere could
+     post to it. It is not a CSRF hole in the classic sense, since
+     nothing here reads a session cookie, but it is an open write
+     endpoint for anyone who wants to fill the table with noise.
+     A MISSING Origin is allowed on purpose: same-origin form posts,
+     server-to-server calls and the smoke tests send none. What is
+     refused is an Origin that is present and foreign, which is exactly
+     the browser-driven cross-site case.
+
+     CONTENT-TYPE. req.json() parses a text/plain body happily, and
+     text/plain is one of the three types a cross-origin form can send
+     without a preflight. Requiring application/json forces any
+     cross-origin caller through a CORS preflight, which we never
+     answer, so the request dies in the browser before it arrives. */
+  const origin = req.headers.get("origin");
+  if (origin) {
+    const allowed = new Set(
+      [SITE.url, process.env.NEXT_PUBLIC_SITE_URL, `https://${process.env.VERCEL_URL ?? ""}`]
+        .filter(Boolean)
+        .map((u) => {
+          try {
+            return new URL(u as string).origin;
+          } catch {
+            return "";
+          }
+        })
+        .filter(Boolean)
+    );
+    // the request's own host is always legitimate: it covers preview
+    // deployments and localhost without hard-coding either
+    const host = req.headers.get("host");
+    if (host) {
+      allowed.add(`https://${host}`);
+      allowed.add(`http://${host}`);
+    }
+    if (!allowed.has(origin)) {
+      console.warn("[lead] cross-origin post refused", { origin });
+      return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 403 });
+    }
+  }
+
+  const contentType = req.headers.get("content-type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    return NextResponse.json(
+      { ok: false, error: "Invalid request." },
+      { status: 415 }
     );
   }
 
@@ -195,6 +248,27 @@ export async function POST(req: Request) {
   /* ---- email: best effort, never blocking ------------------------ */
   const receivedAt = new Date();
 
+  /**
+   * What actually happened to the visitor's own email, so the client can
+   * stop claiming a delivery that was never possible.
+   *
+   *   "sent"        we handed it to the provider
+   *   "unavailable" we could not even BUILD it. Only estimator_email can
+   *                 land here: its template needs a resolved estimate,
+   *                 and without a short code there is nothing to render.
+   *                 A shared estimate page posted no short code, so the
+   *                 dialog said "On its way" for an email that never
+   *                 existed (client, 2026-08-09).
+   *   "failed"      built and attempted, provider refused.
+   *   "none"        this source sends the visitor nothing by design.
+   *
+   * "failed" is deliberately NOT surfaced as a user-facing problem: a
+   * delivery hiccup is ours to chase and the row is already written.
+   * "unavailable" is different in kind, because no retry on our side
+   * will ever produce that email.
+   */
+  let visitorEmail: "sent" | "unavailable" | "failed" | "none" = "none";
+
   try {
     /* -- to the visitor, only when they asked to hear from us --------
        estimator_email  → template 1, the estimate
@@ -205,25 +279,38 @@ export async function POST(req: Request) {
                           that does not know what it has done.
        estimator_quote  → nothing. The visitor is mid-booking. */
     if (email) {
-      if (input.source === "estimator_email" && summary) {
-        await sendEmail({
-          to: email,
-          replyTo: EMAIL.replyTo,
-          ...(await renderEstimateEmail(summary)),
-        });
+      if (input.source === "estimator_email") {
+        if (summary) {
+          const r = await sendEmail({
+            to: email,
+            replyTo: EMAIL.replyTo,
+            ...(await renderEstimateEmail(summary)),
+          });
+          visitorEmail = r.ok ? "sent" : "failed";
+        } else {
+          // No resolvable estimate, so renderEstimateEmail has nothing
+          // to render. Say so instead of falling through silently.
+          visitorEmail = "unavailable";
+          console.warn("[lead] estimator_email with no resolvable estimate", {
+            shortCode,
+            hasShortCode: Boolean(shortCode),
+          });
+        }
       } else if (input.source === "modal_email") {
         // no estimate needed: this acknowledges the message itself
-        await sendEmail({
+        const r = await sendEmail({
           to: email,
           replyTo: EMAIL.replyTo,
           ...(await renderAckEmailEmail(input.name)),
         });
+        visitorEmail = r.ok ? "sent" : "failed";
       } else if (input.source === "modal_call" && input.phone) {
-        await sendEmail({
+        const r = await sendEmail({
           to: email,
           replyTo: EMAIL.replyTo,
           ...(await renderAckCallEmail(input.phone)),
         });
+        visitorEmail = r.ok ? "sent" : "failed";
       }
     }
 
@@ -262,5 +349,8 @@ export async function POST(req: Request) {
     console.error("[lead] email step failed (lead still recorded)", err);
   }
 
-  return NextResponse.json({ ok: true, stored: written });
+  // `visitorEmail` lets the caller tell "we sent it" from "we could
+  // never have sent it". The row is written either way, so this stays a
+  // 200: the lead is captured and nothing about it needs retrying.
+  return NextResponse.json({ ok: true, stored: written, visitorEmail });
 }

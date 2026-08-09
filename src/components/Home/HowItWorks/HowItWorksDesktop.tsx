@@ -79,8 +79,8 @@ export function HowItWorksDesktop() {
                     exit={{ opacity: 0, y: -22 }}
                     transition={{ duration: 0.4, ease: easeOutExpo }}
                   >
-                    {/* numerals are not actions — accent-dim */}
-                    <span className="text-mono block text-5xl text-accent-dim">
+                    {/* Numerals are informative: 4.5:1, not --accent-dim. */}
+                    <span className="text-mono block text-5xl text-muted-foreground">
                       {step.n}
                     </span>
                     <h3 className="text-h3 mt-4 text-foreground">{step.title}</h3>

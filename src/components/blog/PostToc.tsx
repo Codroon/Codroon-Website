@@ -73,7 +73,7 @@ function TocList({
                   : "border-border text-muted-foreground hover:border-border-strong hover:text-foreground"
               )}
             >
-              <span aria-hidden className="text-mono mt-px text-xs text-accent-dim">
+              <span aria-hidden className="text-mono mt-px text-xs text-muted-foreground">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="min-w-0">{item.heading}</span>

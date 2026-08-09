@@ -25,7 +25,7 @@ export const replydude: ProductPageContent = {
   /* Black, by client decision (2026-08-02). ReplyDude's sampled blue
      (#3f67e9) was tried and rejected — the coloured edge read as
      decoration rather than as a frame. This is a deliberate exception to
-     the ≥3:1 guidance in public/products/README.md: black is 1.21:1
+     the ≥3:1 guidance in docs/product-screenshots.md: black is 1.21:1
      against --surface-page, so the edge recedes instead of announcing
      itself. That is the intent. Do not "fix" it back to a sampled
      colour or to the neutral hairline. */

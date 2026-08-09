@@ -17,11 +17,44 @@ export const fieldError = "border-error focus:border-error";
  */
 export function FieldError({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <p id={id} className="mt-1.5 flex items-start gap-1.5 text-[0.8rem] text-muted-foreground">
+    // role="alert" so the message is announced when it appears. Without
+    // it a screen-reader user submitting the form heard nothing at all:
+    // the field is described-by this node, but aria-describedby is only
+    // read when focus reaches the field, and focus was left on the
+    // submit button (client, 2026-08-09). The form-level FormError
+    // already had role="alert"; the per-field one did not.
+    <p
+      id={id}
+      role="alert"
+      className="mt-1.5 flex items-start gap-1.5 text-[0.8rem] text-muted-foreground"
+    >
       <AlertCircle size={14} className="mt-0.5 shrink-0 text-error" aria-hidden />
       <span>{children}</span>
     </p>
   );
+}
+
+/**
+ * Move focus to the first invalid control in a form after a failed
+ * submit, so the fix starts where the problem is rather than wherever
+ * the submit button left it. Pairs with role="alert" above: the alert
+ * announces WHAT is wrong, this puts the user WHERE it is wrong.
+ *
+ * Takes the form element and the field ids in visual order, because
+ * "first" has to mean first on screen, not first in an object.
+ */
+export function focusFirstInvalid(
+  form: HTMLFormElement | null,
+  orderedIds: string[]
+): void {
+  if (!form) return;
+  for (const id of orderedIds) {
+    const el = form.querySelector<HTMLElement>(`#${CSS.escape(id)}`);
+    if (el?.getAttribute("aria-invalid") === "true") {
+      el.focus();
+      return;
+    }
+  }
 }
 
 /** Form-level error banner — icon + text. */

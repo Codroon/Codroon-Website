@@ -65,7 +65,7 @@ export function PostCard({
           className={cn(
             "mt-6 block",
             compact ? "text-[0.8125rem]" : "text-small",
-            onAccent ? "text-accent-foreground/75" : "text-muted-foreground"
+            onAccent ? "text-accent-foreground" : "text-muted-foreground"
           )}
         >
           {formatDate(post.publishedAt)}

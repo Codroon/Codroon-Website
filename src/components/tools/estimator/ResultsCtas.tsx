@@ -24,7 +24,9 @@ import { OutlineButton } from "./shared";
  * decision. The quote CTA fires and forgets; the email dialog awaits
  * it only to pace its "Sending…" state.
  */
-function postLead(body: Record<string, unknown>): Promise<void> {
+type LeadResult = { ok?: boolean; visitorEmail?: string } | null;
+
+function postLead(body: Record<string, unknown>): Promise<LeadResult> {
   try {
     return fetch("/api/lead", {
       method: "POST",
@@ -33,11 +35,11 @@ function postLead(body: Record<string, unknown>): Promise<void> {
       // keepalive: opening the scheduler must not cancel the record
       keepalive: true,
     }).then(
-      () => undefined,
-      () => undefined
+      (r) => r.json().catch(() => null),
+      () => null
     );
   } catch {
-    return Promise.resolve();
+    return Promise.resolve(null);
   }
 }
 
@@ -62,6 +64,10 @@ export function ResultsCtas({
     // "Estimate code" on the event type for this to land anywhere useful
     openContactModal("meeting", {
       calendlyParams: shortCode ? { a1: shortCode } : undefined,
+      // the estimator_quote row above already records this visit, and
+      // it carries the short code; a bare modal_meeting alongside it is
+      // an empty duplicate
+      intentAlreadyRecorded: true,
     });
   }
 
@@ -109,7 +115,9 @@ function EmailEstimateDialog({
 }) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState(""); // honeypot
-  const [state, setState] = useState<"idle" | "sending" | "sent" | "invalid">("idle");
+  const [state, setState] = useState<
+    "idle" | "sending" | "sent" | "logged" | "invalid"
+  >("idle");
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -144,15 +152,17 @@ function EmailEstimateDialog({
     }
     setState("sending");
     // same null-vs-undefined trap as the quote CTA: omit when absent
-    await postLead({
+    const res = await postLead({
       source: "estimator_email",
       ...(shortCode ? { shortCode } : {}),
       email,
       company,
     });
-    // Success either way: the row is what matters, and a delivery
-    // problem is ours to chase, not theirs to see.
-    setState("sent");
+    // A delivery failure stays invisible: the row is what matters and
+    // chasing the provider is our job, not theirs. But "unavailable"
+    // means no estimate email could be built at all, and telling
+    // someone we sent one then is simply untrue.
+    setState(res?.visitorEmail === "unavailable" ? "logged" : "sent");
   }
 
   return (
@@ -167,16 +177,24 @@ function EmailEstimateDialog({
         aria-labelledby="email-estimate-h"
         className="w-full max-w-md rounded-[var(--radius-lg)] border border-border-strong bg-surface p-6 sm:p-7"
       >
-        {state === "sent" ? (
+        {state === "sent" || state === "logged" ? (
           <>
             <h2
               id="email-estimate-h"
               className="text-[1.0625rem] font-medium text-foreground"
             >
-              On its way.
+              {state === "sent" ? "On its way." : "We have your address."}
             </h2>
             <p className="text-small mt-2 text-muted-foreground">
-              We&rsquo;ve sent a link to this estimate to {email}.
+              {state === "sent" ? (
+                <>We&rsquo;ve sent a link to this estimate to {email}.</>
+              ) : (
+                <>
+                  We couldn&rsquo;t attach this estimate to an email, so
+                  we&rsquo;ve passed {email} to the team and someone will send
+                  it to you directly.
+                </>
+              )}
             </p>
             <div className="mt-6">
               <OutlineButton size="sm" onClick={onClose}>

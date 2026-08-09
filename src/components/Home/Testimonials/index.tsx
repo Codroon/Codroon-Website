@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { CountUp } from "@/components/ui/CountUp";
 import { easeOutExpo } from "@/lib/motion";
+import { useRevealArmed } from "@/hooks/useRevealArmed";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 /**
@@ -74,6 +75,7 @@ export function Testimonials() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const reduced = usePrefersReducedMotion();
+  const armed = useRevealArmed();
   const count = TESTIMONIALS.length;
 
   const autoplay = !reduced && !paused && count > 1;
@@ -113,9 +115,16 @@ export function Testimonials() {
               className="min-h-[170px] sm:min-h-[150px]"
             >
               <AnimatePresence mode="wait">
+                {/* initial={false} until the client is up: framer
+                    serialises `initial` into the SSR markup, so the
+                    first quote shipped with opacity:0 and stayed
+                    invisible whenever the bundle did not run. Slide
+                    CHANGES still animate, because each new key mounts
+                    fresh once armed, and the first slide is the only
+                    one that ever rendered on the server. */}
                 <motion.figure
                   key={index}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={armed ? { opacity: 0, y: 10 } : false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3, ease: easeOutExpo }}
@@ -132,14 +141,26 @@ export function Testimonials() {
               </AnimatePresence>
             </div>
 
-            {/* Square pagination indicators */}
-            <div className="mt-8 flex items-center" role="tablist" aria-label="Testimonials">
+            {/* Square pagination indicators.
+                NOT role="tablist". It was, and the pattern was
+                incomplete in every way that matters: role="tab"
+                requires each tab to own a tabpanel via aria-controls,
+                the panel needs role="tabpanel", and the set needs
+                arrow-key roving focus. None of that existed, so a
+                screen reader announced "tab 1 of 4" and then arrow keys
+                did nothing, which is worse than no pattern at all
+                (client, 2026-08-09).
+
+                A carousel's dots are just buttons that change what is
+                shown. aria-current marks the active one, the quote
+                region above already carries aria-live, and Tab moves
+                between them the way it does for any button. */}
+            <div className="mt-8 flex items-center" role="group" aria-label="Choose a testimonial">
               {TESTIMONIALS.map((item, i) => (
                 <button
                   key={item.name}
                   type="button"
-                  role="tab"
-                  aria-selected={i === index}
+                  aria-current={i === index ? "true" : undefined}
                   aria-label={`Show testimonial ${i + 1} of ${count}`}
                   onClick={() => setIndex(i)}
                   className="flex h-11 w-8 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-foreground"

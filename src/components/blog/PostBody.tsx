@@ -37,7 +37,7 @@ function StepList({ steps }: { steps: Array<{ title: string; body: string }> }) 
         <li key={s.title} className="flex gap-5">
           <span
             aria-hidden
-            className="text-mono mt-1 shrink-0 text-sm text-accent-dim"
+            className="text-mono mt-1 shrink-0 text-sm text-muted-foreground"
           >
             {String(i + 1).padStart(2, "0")}
           </span>

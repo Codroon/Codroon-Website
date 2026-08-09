@@ -31,7 +31,7 @@ export function AboutFounders() {
         <div className="grid gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start">
           {/* ---- left: the argument ---- */}
           <div>
-            <p className="text-eyebrow text-accent-foreground/80">{ABOUT_FOUNDERS.eyebrow}</p>
+            <p className="text-eyebrow text-accent-foreground">{ABOUT_FOUNDERS.eyebrow}</p>
             <h2 id="founders-h" className="text-h2 mt-5 max-w-[18ch] text-accent-foreground">
               {ABOUT_FOUNDERS.h2}
             </h2>

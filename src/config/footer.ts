@@ -1,13 +1,29 @@
 import { SERVICES, serviceHref } from "./services";
+import { navItems, isDropdown } from "./nav";
 import { SITE } from "./site";
 
 /**
  * Footer config — columns: Products / Services (all 6, canonical
- * names) / Company / Contact. Legal links live in the bottom bar.
+ * names) / Tools / Company / Contact. Legal links live in the bottom
+ * bar.
+ *
+ * The Tools column was added 2026-08-09. Without it the two cost
+ * calculators had no inbound internal link from the homepage, the
+ * header, the footer or any service page: the header dropdowns were
+ * unmounted until clicked, so the footer was the only crawlable
+ * navigation and it did not list them. They are the site's highest
+ * commercial-intent pages.
  */
 
 export type FooterLink = { name: string; href: string };
 export type FooterColumn = { title: string; links: FooterLink[] };
+
+/** The nav's Tools dropdown is the single source of truth for these. */
+const TOOL_LINKS: FooterLink[] = (
+  navItems.find((i) => isDropdown(i) && i.label === "Tools") as
+    | { items: { label: string; href: string }[] }
+    | undefined
+)?.items.map((t) => ({ name: t.label, href: t.href })) ?? [];
 
 export const FOOTER_COLUMNS: FooterColumn[] = [
   {
@@ -21,6 +37,10 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     title: "Services",
     // Canonical names/slugs — single source of truth in config/services.ts.
     links: SERVICES.map((s) => ({ name: s.name, href: serviceHref(s.slug) })),
+  },
+  {
+    title: "Tools",
+    links: TOOL_LINKS,
   },
   {
     title: "Company",

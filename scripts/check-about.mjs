@@ -132,7 +132,11 @@ console.log("\n── §4 hanging numerals, §5 narrower aside ──");
   });
   // "You own everything" removed 2026-08-03, so two claims remain
   ok("numerals are 01, 02", JSON.stringify(n.numerals) === JSON.stringify(["01", "02"]), n.numerals.join(" "));
-  ok("numerals in accent-dim", n.color === "rgb(160, 74, 46)", n.color);
+  // --accent-dim was demoted to decoration on 2026-08-09: it could not
+  // reach 4.5:1 on either surface, and no dimmer accent value can.
+  // Informative numerals use --text-secondary now.
+  ok("numerals meet contrast (text-secondary, not accent-dim)",
+     n.color === "rgb(200, 197, 185)", n.color);
   ok("numerals hang outside the text column", n.hangs);
 
   const aside = await p.evaluate(() => {

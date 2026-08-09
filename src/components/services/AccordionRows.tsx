@@ -79,6 +79,21 @@ export function AccordionRows({ items }: { items: AccordionItem[] }) {
               id={panelId}
               role="region"
               aria-labelledby={buttonId}
+              /* A collapsed panel is zero-height via grid-rows-[0fr],
+                 which hides it visually but leaves it in the
+                 accessibility tree and its links in the tab order. So
+                 the trigger said aria-expanded="false" while a screen
+                 reader could still read the panel and a keyboard user
+                 could tab into invisible links (client, 2026-08-09).
+
+                 `inert` removes both at once. Only once hydrated:
+                 before that every panel is force-expanded so the copy
+                 is readable without JavaScript, and marking it inert
+                 then would take the FAQ answers out of the
+                 accessibility tree for exactly the users who need the
+                 no-JS fallback. Crawlers are unaffected either way,
+                 since inert does not remove anything from the DOM. */
+              inert={hydrated && !isOpen ? true : undefined}
               className={cn(
                 "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
                 isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"

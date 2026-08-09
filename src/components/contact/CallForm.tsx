@@ -10,6 +10,7 @@ import {
   SuccessNote,
   fieldBase,
   fieldError,
+  focusFirstInvalid,
 } from "./fields";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -55,7 +56,21 @@ export function CallForm() {
     if (!callConsent)
       next.callConsent = "We can only call you if you agree to be contacted by phone.";
     setErrors(next);
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length) {
+      // ids in VISUAL order, so "first invalid" means the first one the
+      // user can see, not the first key in the errors object
+      const form = e.currentTarget;
+      requestAnimationFrame(() =>
+        focusFirstInvalid(form, [
+          "call-name",
+          "call-phone",
+          "call-email",
+          "call-about",
+          "call-consent",
+        ])
+      );
+      return;
+    }
 
     setStatus("submitting");
     try {

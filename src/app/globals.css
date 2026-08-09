@@ -20,7 +20,8 @@
    HARD RULES
    - Text on --accent is ALWAYS #232220 (--accent-foreground).
      Light-on-orange fails contrast (2.54:1) — logo-scale only.
-   - --accent = actions only. Numerals / eyebrows use --accent-dim.
+   - --accent = actions only. Numerals / eyebrows use --text-secondary;
+     --accent-dim is decoration only (fails contrast, see its comment).
    - Error/success never rely on colour alone — icon + text.
    - Body text ≥ 4.5:1 against its surface.
      NOTE: --text-tertiary passes 4.5:1 on --surface-page only.
@@ -45,7 +46,21 @@
   /* Accent */
   --accent: #e96a42; /* brand — ACTIONS ONLY */
   --accent-hover: #f08557; /* derived */
-  --accent-dim: #a04a2e; /* derived — numerals, eyebrows */
+  /* DECORATION ONLY. Never for text that carries meaning.
+     It measures 2.94:1 on --surface-page and 2.66:1 on --surface-card,
+     so it fails 4.5:1 and does not even reach the 3:1 large-text
+     threshold. It used to set the step numerals, the TOC numerals and
+     the eyebrow numbers: roughly 150 informative instances across 19
+     pages (client, 2026-08-09). Those now use --text-secondary.
+
+     Do not "fix" this by lightening it. The accent hue has no value
+     that is both dimmer than --accent and legible on these surfaces:
+     #e96a42 itself measures 5.00:1 on card and is the darkest passing
+     value, so any compliant version simply becomes the accent and
+     breaks "accent means actions only". Legible warm alternatives all
+     land in drab olive-grey. Keep it for bullet dots, watermarks and
+     aria-hidden icons, where contrast rules do not apply. */
+  --accent-dim: #a04a2e;
   --accent-foreground: #232220; /* the ONLY text colour on accent */
 
   /* Status — never colour alone; pair with icon + text */
@@ -94,7 +109,10 @@
      the face is Bricolage Grotesque Variable, not a serif: the site's
      display type is now a grotesque. Fallbacks are sans, not Georgia,
      so a swap does not flash a serif. */
-  --font-serif: "Bricolage Grotesque Variable", var(--font-geist-sans), system-ui, sans-serif;
+  /* --font-bricolage is emitted by next/font/local in layout.tsx, which
+     is what lets the display face be preloaded with the document
+     instead of discovered after the stylesheet parses. */
+  --font-serif: var(--font-bricolage), var(--font-geist-sans), system-ui, sans-serif;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
 
@@ -141,10 +159,45 @@ body {
 
 /* Visible, consistent focus for keyboard users. No border-radius
    override — the outline follows each element's own radius (a forced
-   radius deformed pill-shaped buttons while focused). */
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+   radius deformed pill-shaped buttons while focused).
+
+   INSIDE @layer base ON PURPOSE. Tailwind v4 emits every utility in
+   @layer utilities, and unlayered author CSS beats every layer no
+   matter the specificity. Unlayered, this rule silently overrode the
+   focus-visible:outline-* utilities written specifically to make the
+   ring visible on coloured surfaces, so every accent section drew an
+   orange ring on orange: measured 1.00:1, an invisible focus indicator
+   and a WCAG 2.4.7 and 2.4.11 failure (client, 2026-08-09). Layered,
+   the global stays the default and a component can still override it.
+
+   Anything added here must stay in a layer for the same reason. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* On an accent surface the default ring is orange on orange, so it
+     has to become the one colour that is always legible there. Doing
+     it here rather than per component means a new accent section is
+     correct by default: the previous approach was a
+     focus-visible:outline-accent-foreground utility added by hand, and
+     it had already been missed on the About connect list and the blog
+     teaser's "Read all insights" (client, 2026-08-09).
+
+     Descendants only, deliberately. The ring is drawn at
+     outline-offset OUTSIDE the element, so what matters is the surface
+     behind it, not the element's own fill. An accent-filled control on
+     a dark page (the skip link, "Start a project") sits on the dark
+     page and should keep the accent ring, which reads 5.53:1 there.
+     Matching the accent element itself gave those a #232220 ring on a
+     dark background instead: 1.11:1, invisible.
+
+     Still in @layer base, so a component that genuinely needs a
+     different ring can override it from @layer utilities. */
+  .bg-accent :focus-visible {
+    outline-color: var(--accent-foreground);
+  }
 }
 
 /* Programmatic focus targets (headings we move focus to on a route or
@@ -290,6 +343,30 @@ body {
 }
 .anim-rise {
   animation: rise-in 0.7s var(--ease-out-expo) both;
+}
+
+/* ---- LCP-safe variant: transform only, opacity stays 1 ----
+   Chrome does not count an element as painted while it is at opacity 0,
+   so putting the hero headline in .anim-rise pushed LCP out by the
+   animation delay plus part of its duration: measured +704ms on the
+   homepage and +928ms on a service page, paired runs under identical
+   throttling (client, 2026-08-09).
+
+   Same motion, same timing, same easing. The text is simply painted
+   from the first frame instead of fading in, so the browser can record
+   the paint immediately. Use this on any element that is, or could
+   become, the largest contentful paint: hero h1s and their subheads.
+   .anim-rise stays correct for everything below the fold. */
+@keyframes rise-in-opaque {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: none;
+  }
+}
+.anim-rise-lcp {
+  animation: rise-in-opaque 0.7s var(--ease-out-expo) both;
 }
 .anim-delay-1 { animation-delay: 0.08s; }
 .anim-delay-2 { animation-delay: 0.16s; }

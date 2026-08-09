@@ -48,7 +48,7 @@ export function AboutBuild() {
                 >
                   <span
                     aria-hidden
-                    className="text-mono mb-3 block text-[1.5rem] leading-none text-accent-dim lg:mb-0 lg:mt-1.5 lg:text-right"
+                    className="text-mono mb-3 block text-[1.5rem] leading-none text-muted-foreground lg:mb-0 lg:mt-1.5 lg:text-right"
                   >
                     {String(n + 1).padStart(2, "0")}
                   </span>
@@ -87,7 +87,7 @@ export function AboutBuild() {
             aria-labelledby="ai-native-h"
             className="rounded-[var(--radius-lg)] bg-accent p-7 sm:p-8 lg:sticky lg:top-28 lg:mt-40"
           >
-            <p className="text-eyebrow text-accent-foreground/80">{ABOUT_AI_NATIVE.eyebrow}</p>
+            <p className="text-eyebrow text-accent-foreground">{ABOUT_AI_NATIVE.eyebrow}</p>
             <h2 id="ai-native-h" className="mt-4 font-serif text-[1.75rem] leading-tight text-accent-foreground">
               {ABOUT_AI_NATIVE.h2}
             </h2>

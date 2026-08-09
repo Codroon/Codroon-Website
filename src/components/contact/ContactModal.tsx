@@ -15,6 +15,8 @@ type Props = {
   view: ModalView;
   /** extra Calendly query params (e.g. the estimator's { a1: code }) */
   calendlyParams?: Record<string, string>;
+  /** the opener already logged this visit; do not log it again */
+  intentAlreadyRecorded?: boolean;
   onViewChange: (v: ModalView) => void;
   onClose: () => void;
 };
@@ -101,6 +103,7 @@ export function ContactModal({
   isOpen,
   view,
   calendlyParams,
+  intentAlreadyRecorded = false,
   onViewChange,
   onClose,
 }: Props) {
@@ -159,6 +162,30 @@ export function ContactModal({
     if (!isOpen) return;
     requestAnimationFrame(() => headingRef.current?.focus());
   }, [isOpen, view]);
+
+  /* Record meeting intent whenever the modal SETTLES on the meeting
+     view, not only when the menu tile is clicked.
+     recordMeetingIntent() used to live in that tile's onClick alone, so
+     every route that opens the modal straight onto the scheduler
+     recorded nothing: the estimator's quote CTA is exactly that path,
+     and it is the highest-intent one on the site (client, 2026-08-09).
+
+     Guarded against double-recording. The tile's own click and this
+     effect would otherwise both fire for the same visit, and the ref
+     survives view changes, so going meeting to menu to meeting counts
+     once per open. It resets when the modal closes, so a genuine second
+     visit is recorded again. */
+  const recordedRef = useRef(false);
+  useEffect(() => {
+    if (!isOpen) {
+      recordedRef.current = false;
+      return;
+    }
+    if (view !== "meeting" || recordedRef.current) return;
+    if (intentAlreadyRecorded) return;
+    recordedRef.current = true;
+    recordMeetingIntent();
+  }, [isOpen, view, intentAlreadyRecorded]);
 
   return (
     <AnimatePresence>
@@ -230,12 +257,9 @@ export function ContactModal({
                         key={opt.view}
                         type="button"
                         onClick={() => {
-                          // The meeting option has no form to submit, so
-                          // the signal is recorded on selection — before
-                          // the embed loads. An abandoned booking still
-                          // leaves a trace, which is the only evidence
-                          // we would otherwise never get.
-                          if (opt.view === "meeting") recordMeetingIntent();
+                          // Recording now lives in the effect above, so
+                          // it fires for every route into the meeting
+                          // view rather than just this tile.
                           onViewChange(opt.view);
                         }}
                         className={cn(

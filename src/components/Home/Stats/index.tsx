@@ -24,7 +24,7 @@ const STATS = [
 export function Stats() {
   return (
     <section className="bg-accent py-16 sm:py-20">
-      <h2 className="sr-only">Codroon in numbers</h2>
+      <h2 className="sr-only text-accent-foreground">Codroon in numbers</h2>
       <Container width="wide">
         <ul className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
           {STATS.map((stat) => (

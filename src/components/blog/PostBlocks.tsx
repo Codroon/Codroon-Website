@@ -33,7 +33,11 @@ export function KeyTakeaways({ items }: { items: Takeaway[] }) {
   if (items.length === 0) return null;
   return (
     <section aria-labelledby="key-takeaways-h" className="my-12 border-l-2 border-accent bg-surface py-7 pl-7 pr-6">
-      <h2 id="key-takeaways-h" className="text-eyebrow text-tertiary">
+      {/* --text-tertiary is only rated for the page background; this
+          heading sits inside a --surface-card box, where it measures
+          4.33:1 (client, 2026-08-09). Its siblings on the page
+          background are fine and stay tertiary. */}
+      <h2 id="key-takeaways-h" className="text-eyebrow text-muted-foreground">
         Key takeaways
       </h2>
       <ul className="mt-5 space-y-4">

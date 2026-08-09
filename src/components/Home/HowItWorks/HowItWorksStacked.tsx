@@ -40,8 +40,8 @@ export function HowItWorksStacked({ reduced }: { reduced: boolean }) {
               className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 sm:p-8"
             >
               <div className="flex items-start gap-5">
-                {/* numerals are not actions — accent-dim */}
-                <span className="text-mono text-3xl text-accent-dim">{step.n}</span>
+                {/* Numerals are informative: 4.5:1, not --accent-dim. */}
+                <span className="text-mono text-3xl text-muted-foreground">{step.n}</span>
                 <div aria-hidden className="h-16 w-20 shrink-0">
                   <PhaseGlyph phase={step.phase} />
                 </div>

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { CookieSettingsLink } from "@/components/cookies/CookieSettingsLink";
 import { fadeUp, staggerContainer } from "@/lib/motion";
+import { useRevealArmed } from "@/hooks/useRevealArmed";
 import { FOOTER_COLUMNS, CONTACT, SOCIALS, TAGLINE } from "@/config/footer";
 
 const ICONS = { linkedin: Linkedin, x: Twitter, github: Github } as const;
@@ -34,14 +35,28 @@ const Footer = () => {
   const wordmarkY = useTransform(scrollYProgress, [0, 1], [40, -10]);
 
   const socials = SOCIALS.filter((s) => s.href !== "#");
+  const armed = useRevealArmed();
+
+  /* Until the client is up this is a plain div, so the footer's links
+     are visible in the HTML rather than carrying framer's serialised
+     opacity:0. This footer is the site's only crawlable navigation and
+     12 of its 14 links were invisible without JavaScript. The child
+     motion.divs below inherit their variant from this element, so with
+     a plain parent they simply render in place. */
+  const Shell = armed ? motion.div : "div";
+  const shellProps = armed
+    ? {
+        initial: "hidden" as const,
+        whileInView: "visible" as const,
+        viewport: { once: true, margin: "-10%" },
+        variants: staggerContainer,
+      }
+    : {};
 
   return (
     <footer ref={ref} className="relative overflow-hidden border-t border-border bg-surface">
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-10%" }}
-        variants={staggerContainer}
+      <Shell
+        {...shellProps}
         className="mx-auto max-w-[1240px] px-6 pt-16 sm:px-8 lg:px-12"
       >
         <div className="grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-12 lg:gap-8">
@@ -139,7 +154,7 @@ const Footer = () => {
             <CookieSettingsLink />
           </div>
         </div>
-      </motion.div>
+      </Shell>
 
       {/* Large faded wordmark. The REAL mark, not the word set in the
           sans face with letterspacing (client, 2026-08-04) — that was a

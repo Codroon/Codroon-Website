@@ -335,6 +335,15 @@ export function useEstimatorFlow(
     fireAndForget(async () => {
       const row = await fetchEstimate(code);
       if (!row || !row.answers || Object.keys(row.answers).length === 0) return;
+      /* An MVP code opened on the agent calculator (or the reverse)
+         used to restore the other tool's answers into this one's
+         question set. None of the keys match, so every question read
+         as unanswered while the flow still jumped to the results
+         stage, and the screen showed a full-width "we know nothing"
+         band presented as a real estimate with an empty breakdown.
+         A code belongs to exactly one tool; if it is not this one,
+         leave the URL alone and let the visitor answer normally. */
+      if (row.tool !== config.tool) return;
       const restored = encodeAnswers(row.answers as Answers);
       restored.set(CODE, code);
       restored.set(STAGE, row.completed ? "results" : (params.get(STAGE) ?? "results"));

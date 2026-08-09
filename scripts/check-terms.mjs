@@ -75,7 +75,7 @@ console.log("\n── structure ──");
       top: Math.round(el.getBoundingClientRect().top + window.scrollY) };
   });
   ok("last-updated near the top", date.top < 500, `${date.text} @${date.top}px`);
-  ok("last-updated in the display face", /Bricolage/.test(date.font), date.font);
+  ok("last-updated in the display face", /bricolage/i.test(date.font), date.font);
   ok("last-updated is prominent", date.size >= 22, `${date.size}px`);
 }
 
