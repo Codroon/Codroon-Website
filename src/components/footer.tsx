@@ -13,24 +13,60 @@ import { FOOTER_COLUMNS, CONTACT, SOCIALS, TAGLINE } from "@/config/footer";
 const ICONS = { linkedin: Linkedin, x: Twitter, github: Github } as const;
 
 /**
- * Width of each footer nav column, keyed to the longest label it holds.
- * These plus the brand (2) and Contact (2) must total exactly 12, or a
- * column drops to a second row on its own.
+ * THE FOOTER GRID, in three bands. Six blocks have to be placed: the
+ * brand, four nav columns and Contact.
  *
- *   brand 2 + Products 2 + Services 3 + Tools 2 + Company 1 + Contact 2
+ *   base   2 cols   brand | Services full width, then the four short
+ *                   blocks in two flush pairs
+ *   lg     4 cols   brand | Services full width, then all four short
+ *                   blocks in one row
+ *   xl    12 cols   everything in a single row
  *
- * Written as whole class strings, never composed, because Tailwind's
- * scanner only sees literals and cn() cannot resolve a conflict between
- * two col-span utilities.
+ * Two rules produced that, and breaking either one is what went wrong
+ * before:
+ *
+ * 1. A 6-link column may not sit beside a 2-link column when there is
+ *    another row underneath it. Services is 285px and Products is
+ *    102px, so pairing them opens a 180px hole with content below it,
+ *    which reads as broken. Below xl, Services gets its own full-width
+ *    row and its list goes multi-column; the four short blocks are all
+ *    102px and pair up flush. In the xl band every block is in the one
+ *    row, so the ragged bottom is just the end of the footer.
+ *
+ * 2. Every row has to fill. Six blocks in a 12-col row worked; six in a
+ *    2-col row leaves Contact orphaned with an empty cell beside it,
+ *    which is what shipped (client, 2026-08-11).
+ *
+ * The row of six does NOT fit at 1024: the six longest labels need
+ * ~809px on one line and the lg container offers 768px, which is why
+ * "AI Agent Calculator" wrapped there. Hence xl, not lg, for that band.
+ *
+ * Spans are whole class strings, never composed. Tailwind's scanner
+ * only sees literals, and cn() is a plain joiner, not tailwind-merge,
+ * so cn("lg:col-span-2", cond && "lg:col-span-1") ships BOTH and the
+ * stylesheet's own order picks the winner (client, 2026-08-09).
+ * Keyed by title, not index, so reordering config/footer.ts is safe.
  */
 const COLUMN_SPAN: Record<string, string> = {
-  Products: "lg:col-span-2",
-  // "Custom Software Development Company" is the longest label here
-  Services: "lg:col-span-3",
-  Tools: "lg:col-span-2",
-  // only "About" and "Blog"
-  Company: "lg:col-span-1",
+  // full-width below xl — see rule 1
+  Services: "col-span-2 lg:col-span-4 xl:col-span-3",
+  Products: "xl:col-span-2",
+  Tools: "xl:col-span-2",
+  // only "About" and "Blog", so it takes the leftover single span
+  Company: "xl:col-span-1",
 };
+
+/**
+ * Services holds 6 links and is full width below xl, so its list runs
+ * in columns there rather than as one long sparse stack. Widths are
+ * chosen so no service label wraps: 1 col at 342px, 2 at 336px+, 3 at
+ * 288px. At xl it is a narrow column again and goes back to a stack.
+ */
+const LIST_CLASS: Record<string, string> = {
+  Services:
+    "grid gap-3 md:grid-cols-2 md:gap-x-8 lg:grid-cols-3 xl:grid-cols-1",
+};
+const LIST_DEFAULT = "flex flex-col gap-3";
 
 function FootLink({ name, href }: { name: string; href: string }) {
   return (
@@ -79,21 +115,14 @@ const Footer = () => {
         {...shellProps}
         className="mx-auto max-w-[1240px] px-6 pt-16 sm:px-8 lg:px-12"
       >
-        {/* The lg spans must total exactly 12. Adding the Tools column
-            took them to 14 (3+2+3+2+2+2) and pushed Contact onto a
-            second row on its own, with the whole right side of the
-            footer empty (client, 2026-08-09).
-
-            Back to 12 as 2+2+3+2+1+2. The two spans that gave way are
-            the ones with slack: the brand block holds a wordmark and a
-            short tagline that simply wraps a line further, and Company
-            holds only "About" and "Blog", which fit a single span with
-            room to spare. Services keeps 3 because its longest label is
-            "Custom Software Development Company", and Contact keeps 2
-            because it has to hold an email address on one line. */}
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-12 lg:gap-8">
+        {/* Track counts must swallow every block exactly: 2 + 2 pairs
+            at base, 4 short blocks in one row at lg, and 2+3+2+2+1+2 =
+            12 at xl. A total that overshoots drops the last block onto
+            a row of its own — that is how Contact ended up alone with
+            half the footer empty, twice. See COLUMN_SPAN above. */}
+        <div className="grid grid-cols-2 gap-10 lg:grid-cols-4 xl:grid-cols-12 xl:gap-8">
           {/* Brand */}
-          <motion.div variants={fadeUp} className="col-span-2 md:col-span-3 lg:col-span-2">
+          <motion.div variants={fadeUp} className="col-span-2 lg:col-span-4 xl:col-span-2">
             <Link href="/" aria-label="Codroon — home" className="inline-block">
               <Wordmark />
             </Link>
@@ -122,24 +151,17 @@ const Footer = () => {
                 dead form until then. */}
           </motion.div>
 
-          {/* Nav columns: Products / Services / Tools / Company.
-
-              ONE span class each, from the map above. cn() is a plain
-              joiner, not tailwind-merge, so cn("lg:col-span-2", cond &&
-              "lg:col-span-1") ships BOTH and the stylesheet's own order
-              decides the winner. col-span-2 sorts after col-span-1, so
-              the narrow override silently lost; the previous
-              index-based version only worked because col-span-3 happens
-              to sort after col-span-2 (client, 2026-08-09). */}
+          {/* Nav columns, in the order config/footer.ts declares them:
+              Services / Products / Tools / Company. */}
           {FOOTER_COLUMNS.map((col) => (
             <motion.nav
               key={col.title}
               variants={fadeUp}
               aria-label={col.title}
-              className={COLUMN_SPAN[col.title] ?? "lg:col-span-2"}
+              className={COLUMN_SPAN[col.title] ?? "xl:col-span-2"}
             >
               <h2 className="text-eyebrow mb-4 text-muted-foreground">{col.title}</h2>
-              <ul className="flex flex-col gap-3">
+              <ul className={LIST_CLASS[col.title] ?? LIST_DEFAULT}>
                 {col.links.map((l) => (
                   <li key={l.name}>
                     <FootLink {...l} />
@@ -149,8 +171,9 @@ const Footer = () => {
             </motion.nav>
           ))}
 
-          {/* Contact */}
-          <motion.div variants={fadeUp} className="lg:col-span-2">
+          {/* Contact — closes the last row at every width, so it can
+              never be the block that gets orphaned. */}
+          <motion.div variants={fadeUp} className="xl:col-span-2">
             <h2 className="text-eyebrow mb-4 text-muted-foreground">Contact</h2>
             <ul className="flex flex-col gap-3 text-[0.95rem] text-muted-foreground">
               <li className="flex items-center gap-2.5">
