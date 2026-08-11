@@ -2,24 +2,33 @@
  * Analytics providers, and the switch that decides whether the cookie
  * banner appears on a first visit.
  *
- * Nothing is installed yet (client, 2026-08-04: the tools go in after
- * the privacy page ships). Fill these in and the consent layer is
- * already wired: the banner starts asking, and no script may load until
- * `analytics` is true in ConsentContext.
+ * Installed 2026-08-11 (client). These ids are PUBLIC — they ship in the
+ * page source by design, which is why they are literals here and not
+ * environment variables. They are not secrets and nothing is gained by
+ * hiding them.
  *
- * ⚠️ When Clarity and Mouseflow land, configure INPUT MASKING in both
- * dashboards before the first recording. §6 of the policy states that
- * text typed into forms is masked, and neither tool does that fully by
- * default. Verify by recording yourself filling in the contact modal and
- * confirming the replay shows masked characters.
+ * Setting any of them to a value turns HAS_ANALYTICS true, which is what
+ * makes the cookie banner start asking on a first visit. No script may
+ * load until `analytics` is true in ConsentContext: the policy says in
+ * §7 that these are "off until you accept them", so pasting the vendors'
+ * own <head> snippets would have made that sentence false on day one.
+ *
+ * ⚠️ INPUT MASKING. §6 states that text typed into forms is masked. Both
+ * tools do that by default — Clarity masks input contents in every mode
+ * including Relaxed and it cannot be turned off, and Mouseflow excludes
+ * keystrokes automatically — so the promise holds as installed. What is
+ * NOT covered by default is user data rendered as ordinary page text.
+ * Nothing in the contact flow does that today (the success notes are
+ * static strings), but verify after any change by recording yourself
+ * through the contact modal and the estimator.
  */
 export const ANALYTICS = {
   /** Google Analytics measurement id, e.g. "G-XXXXXXXXXX" */
-  ga: null as string | null,
+  ga: "G-0DJG1L78EQ" as string | null,
   /** Microsoft Clarity project id */
-  clarity: null as string | null,
+  clarity: "y0h609nnaf" as string | null,
   /** Mouseflow website id */
-  mouseflow: null as string | null,
+  mouseflow: "0dafe929-43c8-4126-9213-1681ca7f48a5" as string | null,
 };
 
 /** True once any provider is configured. */

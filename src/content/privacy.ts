@@ -7,12 +7,18 @@
  *
  * PUBLISHED AS WRITTEN on the client's instruction (2026-08-04): the
  * analytics and session-recording tools described in §2, §6, §7 and §9
- * are being added after this page ships. The cookie banner is built and
- * gates them from the moment they land.
+ * were added after this page shipped. Google Analytics, Microsoft
+ * Clarity and Mouseflow went in on 2026-08-11, behind the consent gate
+ * this page promises, so §6, §7 and §9 now describe what actually runs.
+ *
+ * Vercel Analytics, the fourth tool named in §6, is still NOT installed.
+ * That sentence remains ahead of the build.
  *
  * ⚠️ The deck is an unreviewed first draft and says so: a solicitor read
- * is still outstanding, and input masking in Clarity and Mouseflow must
- * be configured in those dashboards when the tools go in.
+ * is still outstanding. On masking, both tools cover §6 by default —
+ * Clarity masks input contents in every mode and Mouseflow excludes
+ * keystrokes — so no dashboard change was needed to make that sentence
+ * true. See the note in config/analytics.ts for what is not covered.
  */
 
 export const PRIVACY_META = {

@@ -3,6 +3,7 @@ import { MotionConfig } from "framer-motion";
 import { ContactModalProvider } from "@/components/contact/ContactModalContext";
 import { ConsentProvider } from "@/components/cookies/ConsentContext";
 import { CookieBanner } from "@/components/cookies/CookieBanner";
+import { AnalyticsScripts } from "@/components/analytics/AnalyticsScripts";
 import { HAS_ANALYTICS } from "@/config/analytics";
 
 /**
@@ -16,6 +17,10 @@ import { HAS_ANALYTICS } from "@/config/analytics";
  *    to scripts that do not exist yet would be theatre. The footer's
  *    "Cookie settings" link opens it either way, because the privacy
  *    policy points at that link.
+ *  - AnalyticsScripts loads GA, Clarity and Mouseflow, and must sit
+ *    INSIDE ConsentProvider because it reads that gate. The root layout
+ *    wraps this around every route, which is how the three end up on
+ *    every page without being pasted into any of them.
  */
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -23,6 +28,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ConsentProvider askOnFirstVisit={HAS_ANALYTICS}>
         <ContactModalProvider>{children}</ContactModalProvider>
         <CookieBanner />
+        <AnalyticsScripts />
       </ConsentProvider>
     </MotionConfig>
   );

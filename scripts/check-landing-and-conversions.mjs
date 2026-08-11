@@ -64,8 +64,12 @@ await p.goto("http://localhost:3000/", { waitUntil: "networkidle" });
   await sectionCta.first().scrollIntoViewIfNeeded();
   await sectionCta.first().click();
   await p.waitForTimeout(700);
+  // aria-modal="true" pins this to a real modal. The cookie banner is
+  // also role="dialog" (aria-modal="false") and now shows on a first
+  // visit, so a bare [role="dialog"] matches two elements and the
+  // strict locator throws instead of asserting (2026-08-11).
   ok("section CTA opens the contact modal",
-    await p.locator('[role="dialog"]').isVisible().catch(() => false));
+    await p.locator('[role="dialog"][aria-modal="true"]').isVisible().catch(() => false));
   await p.keyboard.press("Escape");
   await p.waitForTimeout(400);
   ok("ReplyDude descriptor trimmed", txt.includes("A cross-platform desktop AI agent.") && !txt.includes("agent running reply growth"));
@@ -202,7 +206,8 @@ console.log("── estimator results ──");
   e.context().on("page", (pg) => { popup = pg; });
   await e.locator("button", { hasText: "Get a fixed price quote" }).click();
   await e.waitForTimeout(1200);
-  const dialog = e.locator('[role="dialog"]');
+  // aria-modal="true": excludes the cookie banner — see the note above
+  const dialog = e.locator('[role="dialog"][aria-modal="true"]');
   ok("modal opened on the meeting view", (await dialog.count()) === 1 && ((await dialog.textContent()) ?? "").includes("Schedule a meeting"));
   const iframeSrc = await dialog.locator("iframe").getAttribute("src");
   ok("Calendly iframe themed", iframeSrc?.includes("calendly.com") && iframeSrc?.includes("background_color=232220"), iframeSrc ?? "none");
