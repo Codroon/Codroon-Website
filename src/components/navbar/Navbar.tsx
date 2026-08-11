@@ -13,6 +13,14 @@ import { MobileMenu } from "./MobileMenu";
 
 const SCROLL_THRESHOLD = 24;
 
+/**
+ * Grace period before leaving the nav closes an open dropdown. Only the
+ * pointer path uses it; Escape, Tab, click, choosing an item and route
+ * changes all close at once. Enough to survive dipping a pixel outside
+ * the nav on the way to a panel, short enough never to feel sticky.
+ */
+const DROPDOWN_CLOSE_DELAY_MS = 140;
+
 export function Navbar() {
   const pathname = usePathname();
   const { open: openContactModal } = useContactModal();
@@ -20,6 +28,37 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelDropdownClose = useCallback(() => {
+    if (dropdownTimer.current) {
+      clearTimeout(dropdownTimer.current);
+      dropdownTimer.current = null;
+    }
+  }, []);
+
+  const closeDropdownNow = useCallback(() => {
+    cancelDropdownClose();
+    setOpenDropdown(null);
+  }, [cancelDropdownClose]);
+
+  const closeDropdownSoon = useCallback(() => {
+    cancelDropdownClose();
+    dropdownTimer.current = setTimeout(() => {
+      dropdownTimer.current = null;
+      setOpenDropdown(null);
+    }, DROPDOWN_CLOSE_DELAY_MS);
+  }, [cancelDropdownClose]);
+
+  const openDropdownFor = useCallback(
+    (label: string) => {
+      cancelDropdownClose();
+      setOpenDropdown(label);
+    },
+    [cancelDropdownClose]
+  );
+
+  useEffect(() => cancelDropdownClose, [cancelDropdownClose]);
 
   // active-route check (hash/anchor links never count as "active")
   const isActive = useCallback(
@@ -50,21 +89,21 @@ export function Navbar() {
 
   // close everything on route change
   useEffect(() => {
-    setOpenDropdown(null);
+    closeDropdownNow();
     setMobileOpen(false);
-  }, [pathname]);
+  }, [pathname, closeDropdownNow]);
 
   // close dropdowns on outside click
   useEffect(() => {
     if (!openDropdown) return;
     const onClick = (e: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
-        setOpenDropdown(null);
+        closeDropdownNow();
       }
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
-  }, [openDropdown]);
+  }, [openDropdown, closeDropdownNow]);
 
   return (
     <>
@@ -88,22 +127,49 @@ export function Navbar() {
             <Wordmark />
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
+          {/* Desktop nav.
+
+              THE HOVER GROUP IS THIS ELEMENT, not each dropdown.
+
+              Each dropdown used to close on its own mouseleave, and the
+              path from a trigger to an option does not stay inside that
+              dropdown: leaving Tools at its right edge on the way down
+              to an option puts the pointer over the nav's own
+              background for several pixels, which fired mouseleave and
+              shut the panel before it could be reached. It survived
+              only when a single mousemove happened to jump the gap, so
+              a quick flick worked and aiming at an option did not
+              (client, 2026-08-11).
+
+              Widening a dropdown's own hover area cannot fix that: the
+              ground in question sits beside the trigger, where an
+              invisible extension would cover Blog and About and eat
+              their clicks. The nav already contains every trigger,
+              every panel and the space between them, so it is the
+              honest boundary. Panels are DOM children of it, so moving
+              into one is never a leave. */}
+          <nav
+            className="hidden items-center gap-7 lg:flex"
+            aria-label="Primary"
+            onMouseLeave={closeDropdownSoon}
+          >
             {navItems.map((item) =>
               isDropdown(item) ? (
                 <NavDropdown
                   key={item.label}
                   item={item}
                   isOpen={openDropdown === item.label}
-                  onOpen={() => setOpenDropdown(item.label)}
-                  onClose={() => setOpenDropdown(null)}
+                  onOpen={() => openDropdownFor(item.label)}
+                  onClose={closeDropdownNow}
                   isActive={isActive}
                 />
               ) : (
                 <Link
                   key={item.label}
                   href={item.href}
+                  /* A plain link is not a dropdown, so arriving at one
+                     means the open panel is no longer wanted. */
+                  onMouseEnter={closeDropdownSoon}
                   aria-current={isActive(item.href) ? "page" : undefined}
                   className={cn(
                     "group py-2 text-[0.95rem] font-medium transition-colors duration-200",

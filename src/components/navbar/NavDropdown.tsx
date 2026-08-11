@@ -17,6 +17,11 @@ type Props = {
  * NavDropdown — desktop dropdown. Opens on hover, focus and click;
  * renders a panel of label + descriptor rows. Arrow keys move between
  * items, Escape closes and returns focus to the trigger.
+ *
+ * This component only ever OPENS on hover. Closing on hover is owned by
+ * Navbar, at the level of the whole <nav>, because the pointer has to
+ * cross ground that belongs to no single dropdown on its way from a
+ * trigger to an option. See the note on the nav element there.
  */
 export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) {
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -26,6 +31,7 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
   const openedAtRef = useRef(0);
   const panelId = `nav-panel-${item.label.toLowerCase()}`;
 
+  // onOpen also cancels any pending close scheduled by the nav
   const openNow = () => {
     openedAtRef.current = Date.now();
     onOpen();
@@ -42,7 +48,7 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
   const onTriggerKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      if (isOpen) onClose(true);
+      if (isOpen) handleClose(true);
       else {
         onOpen();
         requestAnimationFrame(() => focusItem(0));
@@ -52,7 +58,7 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
       onOpen();
       requestAnimationFrame(() => focusItem(0));
     } else if (e.key === "Escape") {
-      onClose(true);
+      handleClose(true);
     }
   };
 
@@ -65,14 +71,15 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
       focusItem(index - 1);
     } else if (e.key === "Escape") {
       e.preventDefault();
-      onClose(true);
+      handleClose(true);
     } else if (e.key === "Tab") {
       // leaving the panel closes it
-      onClose(false);
+      handleClose(false);
     }
   };
 
-  // return focus to trigger when closing via Escape
+  // Close at once — Escape, Tab, click, choosing an item. Never waits
+  // on the hover grace period. Returns focus to the trigger on Escape.
   const handleClose = (returnFocus = false) => {
     onClose(returnFocus);
     if (returnFocus) requestAnimationFrame(() => triggerRef.current?.focus());
@@ -84,12 +91,12 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
 
   const anyActive = item.items.some((i) => isActive(i.href));
 
+  // No onMouseLeave here. Leaving THIS group is not the same as leaving
+  // the menu: the run from a trigger to an option crosses the nav's own
+  // background, and treating that as an exit is what made the options
+  // unreachable. Navbar closes on leaving the whole nav.
   return (
-    <div
-      className="relative"
-      onMouseEnter={openNow}
-      onMouseLeave={() => onClose(false)}
-    >
+    <div className="relative" onMouseEnter={openNow}>
       <button
         ref={triggerRef}
         type="button"
@@ -146,59 +153,88 @@ export function NavDropdown({ item, isOpen, onOpen, onClose, isActive }: Props) 
           fade is a CSS transition now; framer cannot animate an element
           it does not mount, and a mounted-but-hidden panel is the whole
           point. */}
+      {/* HOVER BRIDGE.
+
+          The 12px between the trigger and the panel used to be `mt-3`
+          on the panel itself. The panel is absolutely positioned, so it
+          adds nothing to this group's box, which meant the group's
+          hover area stopped at the bottom of the button and that 12px
+          belonged to nobody: the element under the pointer there was
+          the header's own container. Crossing it fired mouseleave and
+          the panel shut before you reached a single option.
+
+          It only ever worked if the pointer jumped the strip inside one
+          mousemove, which is why it felt random — a fast flick got
+          through, aiming at an option did not (client, 2026-08-11).
+
+          So the gap now lives INSIDE the hover area as padding on this
+          wrapper. It looks identical; it is simply no longer dead.
+
+          The wrapper carries the visibility switch, not the card. The
+          panel stays mounted at all times for crawlers, and a wrapper
+          that stayed visible would sit over a 320px-wide patch of the
+          page swallowing clicks. visibility:hidden is not hit-tested
+          and is inherited, so one class covers the card too. */}
       <div
-        id={panelId}
-        role="menu"
-        aria-label={item.label}
-        aria-hidden={!isOpen}
         className={cn(
-          "absolute left-0 top-full z-50 mt-3 w-[20rem] origin-top-left rounded-[var(--radius-lg)] border border-border bg-surface/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl",
-          "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
-          isOpen
-            ? "visible translate-y-0 scale-100 opacity-100"
-            : "invisible -translate-y-1 scale-[0.98] opacity-0"
+          "absolute left-0 top-full z-50 pt-3",
+          isOpen ? "visible" : "invisible"
         )}
       >
-            {item.items.map((leaf, i) => {
-              const active = isActive(leaf.href);
-              return (
-                <Link
-                  key={leaf.href}
-                  href={leaf.href}
-                  role="menuitem"
-                  ref={(el) => {
-                    itemRefs.current[i] = el;
-                  }}
-                  aria-current={active ? "page" : undefined}
-                  onKeyDown={(e) => onItemKeyDown(e, i)}
-                  onClick={() => onClose(false)}
+        <div
+          id={panelId}
+          role="menu"
+          aria-label={item.label}
+          aria-hidden={!isOpen}
+          className={cn(
+            "w-[20rem] origin-top-left rounded-[var(--radius-lg)] border border-border bg-surface/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl",
+            "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
+            isOpen
+              ? "translate-y-0 scale-100 opacity-100"
+              : "-translate-y-1 scale-[0.98] opacity-0"
+          )}
+        >
+          {item.items.map((leaf, i) => {
+            const active = isActive(leaf.href);
+            return (
+              <Link
+                key={leaf.href}
+                href={leaf.href}
+                role="menuitem"
+                ref={(el) => {
+                  itemRefs.current[i] = el;
+                }}
+                aria-current={active ? "page" : undefined}
+                onKeyDown={(e) => onItemKeyDown(e, i)}
+                onClick={() => handleClose(false)}
+                className={cn(
+                  "group/item flex items-start gap-3 rounded-[var(--radius-md)] px-3 py-2.5 transition-colors duration-150",
+                  active ? "bg-surface-2" : "hover:bg-surface-2"
+                )}
+              >
+                <span
+                  aria-hidden
                   className={cn(
-                    "group/item flex items-start gap-3 rounded-[var(--radius-md)] px-3 py-2.5 transition-colors duration-150",
-                    active ? "bg-surface-2" : "hover:bg-surface-2"
+                    "mt-2 h-1.5 w-1.5 shrink-0 rounded-full transition-colors duration-150",
+                    active
+                      ? "bg-accent"
+                      : "bg-border group-hover/item:bg-accent"
                   )}
-                >
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "mt-2 h-1.5 w-1.5 shrink-0 rounded-full transition-colors duration-150",
-                      active
-                        ? "bg-accent"
-                        : "bg-border group-hover/item:bg-accent"
-                    )}
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-[0.95rem] font-medium text-foreground">
-                      {leaf.label}
-                    </span>
-                    {leaf.descriptor && (
-                      <span className="text-small block text-muted-foreground">
-                        {leaf.descriptor}
-                      </span>
-                    )}
+                />
+                <span className="min-w-0">
+                  <span className="block text-[0.95rem] font-medium text-foreground">
+                    {leaf.label}
                   </span>
-                </Link>
-              );
-            })}
+                  {leaf.descriptor && (
+                    <span className="text-small block text-muted-foreground">
+                      {leaf.descriptor}
+                    </span>
+                  )}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
